@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sonar — Wisconsin lake and fishing intelligence
 
-## Getting Started
+Species, regulations, live conditions and bait suggestions for **5,028 Wisconsin
+lakes**, built entirely on open Wisconsin DNR data.
 
-First, run the development server:
+Wisconsin publishes an unusual amount of high-quality fisheries data, but it is
+scattered across three separate systems and none of it is designed to be read on
+a phone at 5am. Sonar joins it together, keyed by the DNR's own waterbody id
+(WBIC), and adds a transparent bite forecast on top.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## What it does
+
+- **Search 5,028 lakes** by name or county, or find the closest water to you.
+- **See what lives there** — species with the DNR's own abundance ratings
+  (Abundant / Common / Present), from fisheries survey data.
+- **See what you can keep** — per-species seasons, size limits and bag limits for
+  that specific lake.
+- **Decide whether to go** — a 0-100 bite forecast per species, with every
+  contributing factor shown and scored.
+- **Know what to throw** — presentation suggestions matched to season, water
+  temperature, sky and wind, each with the reasoning behind it.
+
+## Architecture
+
+```
+ingest/            Python ETL (run locally, output committed)
+  wdnr.py            Shared ArcGIS REST client: pagination, retry, TLS
+  01_lakes.py        24K Hydrography layer  -> 5,028 lakes with WGS84 centroids
+  02_species.py      DNR lake pages         -> species, county, depth, landings
+  03_regulations.py  Lake regulations layer -> 122k tidy regulation rows
+  04_build_dataset.py  merge + intern strings -> src/data/*.json
+
+src/lib/           Pure, dependency-free rules engines (unit tested)
+  forecast.ts        Bite scoring from weather, light and solunar inputs
+  bait.ts            Condition-matched presentation suggestions
+  species.ts         Behavioural profiles for Wisconsin gamefish
+  weather.ts         Open-Meteo client + water temperature estimation
+  lakes.ts           Data access: search, proximity, regulation lookup
+
+src/app/           Next.js App Router (React Server Components)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Why static JSON instead of a database
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The DNR dataset is read-only reference data that changes about once a season.
+A database would add cost, latency and deployment surface without buying
+anything. When catch logging arrives it needs real writes, auth and per-user
+rows — that is the point to introduce Postgres, not before.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The regulations pull is 22 MB of mostly-duplicate text: 122,807 rows drawn from
+only **315 distinct regulation strings**. Interning those strings and referencing
+them by index takes the shipped payload to under 1 MB.
 
-## Learn More
+### Why the forecast shows its work
 
-To learn more about Next.js, take a look at the following resources:
+The bite score is never displayed alone. Every factor that fed it is listed with
+its point contribution:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+WIND         Light SSE chop (9 mph) — close to ideal              +10
+SKY          Overcast (100%) — extends the low-light bite all day  +9
+TIME OF DAY  Midday — the slowest stretch                          -7
+PRESSURE     Rising (+1.7 mb in 6h) — fish easing back off         -6
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A number with no reasoning is not something an angler can argue with, and being
+able to argue with it is what makes it useful.
 
-## Deploy on Vercel
+## Data sources
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Source | Provides |
+|---|---|
+| [WDNR 24K Hydrography](https://dnrmaps.wi.gov/arcgis/rest/services/DW_Map_Dynamic/EN_SurfaceWater_WTM_Ext_Dynamic_L16/MapServer/5) | Lake polygons, WBIC, names |
+| [WDNR lake pages](https://apps.dnr.wi.gov/lakes/lakepages/LakeDetail.aspx?wbic=762400) | Species + abundance, county, max depth, boat landings |
+| [WDNR lake regulations](https://dnrmaps.wi.gov/arcgis2/rest/services/FM_WFF/FM_WFF_LAKE_REGULATIONS_WTM_EXT/MapServer/2) | Per-species seasons, size and bag limits |
+| [Open-Meteo](https://open-meteo.com/) | Hourly temp, pressure, wind, cloud, precipitation |
+| [SunCalc](https://github.com/mourner/suncalc) | Sun and moon geometry for solunar periods |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+All free, no API keys. WBIC is the join key across every DNR dataset.
+
+## Running it
+
+```bash
+npm install
+npm run dev          # http://localhost:3000
+npm test             # rules engine unit tests
+```
+
+Refreshing the dataset from the DNR (only needed once a season):
+
+```bash
+python3 ingest/01_lakes.py           # ~1 min
+python3 ingest/02_species.py --limit 0   # ~85 min, rate limited + resumable
+python3 ingest/03_regulations.py     # ~1 min
+python3 ingest/04_build_dataset.py   # instant
+```
+
+The species scraper is deliberately polite: one request per second, every page
+cached to disk, and safe to interrupt and resume.
+
+## Known limitations
+
+- **Water temperature is estimated**, not measured. USGS gauges cover rivers,
+  not inland lakes, so there is no free live feed. Sonar models surface temp
+  from recent air temperatures damped by lake size and depth, and labels it as
+  an estimate everywhere it appears.
+- **The bite score is a heuristic**, not a validated model. It encodes
+  well-established angling relationships but has never been fitted against a
+  catch database.
+- **Regulations can lag** rule changes. The DNR pamphlet is always the authority.
+
+## Roadmap
+
+Catch logging with photos, a friends feed, and per-lake leaderboards — which is
+when this grows a real database, authentication, and a spot-privacy model.
+Anglers will not use an app that broadcasts their exact coordinates, so catches
+will attach to the lake with exact GPS opt-in only.

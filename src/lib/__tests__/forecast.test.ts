@@ -204,3 +204,19 @@ describe("helpers", () => {
     expect(ratingFor(50)).toBe("Fair");
   });
 });
+
+describe("summary text", () => {
+  it("keeps compass acronyms uppercase when folding them into a sentence", () => {
+    const f = biteForecast({
+      hours: series({ windMph: 8, windDirDeg: 157 }), // SSE
+      at: NOON,
+      celestial: celestial(),
+      species: "walleye",
+      waterTempF: 68,
+    });
+    expect(f.summary).toContain("SSE");
+    expect(f.summary).not.toContain("sse ");
+    // ...while still reading as lowercase prose at the start.
+    expect(f.summary.startsWith(f.summary[0].toLowerCase())).toBe(true);
+  });
+});

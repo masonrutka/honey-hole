@@ -25,13 +25,13 @@ export default function LakeSearch() {
   // Debounce so typing "winnebago" fires one request, not nine.
   const latest = useRef(0);
   useEffect(() => {
-    if (query.trim().length < 2) {
-      if (mode === "search") setResults([]);
-      return;
-    }
-    setLoading(true);
+    // Clearing on a short query is handled in onChange -- an event, not an
+    // effect -- so nothing here sets state on the synchronous path.
+    if (query.trim().length < 2) return;
+
     const id = ++latest.current;
     const timer = setTimeout(async () => {
+      setLoading(true);
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
@@ -46,7 +46,7 @@ export default function LakeSearch() {
       }
     }, 180);
     return () => clearTimeout(timer);
-  }, [query, mode]);
+  }, [query]);
 
   function findNearby() {
     if (!navigator.geolocation) {
@@ -104,9 +104,17 @@ export default function LakeSearch() {
             type="search"
             value={query}
             onChange={(e) => {
-              setQuery(e.target.value);
+              const next = e.target.value;
+              setQuery(next);
               setTouched(true);
               if (mode === "nearby") setMode("search");
+              // Too short to search: drop stale results immediately rather
+              // than leaving the previous query's hits on screen.
+              if (next.trim().length < 2) {
+                latest.current++; // cancel any in-flight request
+                setResults([]);
+                setLoading(false);
+              }
             }}
             placeholder="Search 5,000 Wisconsin lakes…"
             aria-label="Search Wisconsin lakes by name or county"

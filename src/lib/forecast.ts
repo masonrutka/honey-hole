@@ -341,9 +341,16 @@ export function biteForecast(input: ForecastInput): BiteForecast {
   // Summarise using whichever factors actually moved the needle.
   const ranked = [...factors].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
   const top = ranked.filter((f) => f.delta !== 0).slice(0, 3);
+  // Lowercase only the leading character so compass points and other acronyms
+  // ("SSE", "NNW") survive being folded into a sentence.
   const summary =
     top.length > 0
-      ? top.map((f) => f.detail.split(" — ")[0].toLowerCase()).join(", ")
+      ? top
+          .map((f) => {
+            const head = f.detail.split(" — ")[0];
+            return head.charAt(0).toLowerCase() + head.slice(1);
+          })
+          .join(", ")
       : "conditions are unremarkable";
 
   return { score, rating, factors, summary };

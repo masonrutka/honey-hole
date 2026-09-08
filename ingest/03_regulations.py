@@ -50,6 +50,9 @@ def main() -> int:
 
         attrs = feat["attributes"]
         wbic = attrs.get("WBIC")
+        # This layer types WBIC as a float; the hydro layer types it as an
+        # integer. Normalise or the two datasets will never join.
+        wbic = int(wbic) if wbic else None
         if not wbic:
             # Great Lakes and boundary waters carry no WBIC; they have their own
             # regulation pamphlets and are out of scope for lake pages.

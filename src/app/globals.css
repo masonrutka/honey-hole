@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
+/*
+  A dark-first palette. This app gets opened at 4:45am in a truck and again on
+  the water in full sun -- dark reduces glare in the dark and keeps contrast
+  high in the light.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a1018;
+  --surface: #111a26;
+  --surface-2: #16212f;
+  --border: #223046;
+  --foreground: #e8eef5;
+  --muted: #93a4b8;
+  --accent: #38bdf8;
+  --accent-dim: #0ea5e9;
+  --prime: #34d399;
+  --good: #a3e635;
+  --fair: #fbbf24;
+  --slow: #fb923c;
+  --poor: #f87171;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-edge: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-prime: var(--prime);
+  --color-good: var(--good);
+  --color-fair: var(--fair);
+  --color-slow: var(--slow);
+  --color-poor: var(--poor);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background:
+    radial-gradient(1100px 500px at 50% -10%, #16273a 0%, transparent 60%),
+    var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Consistent focus ring for keyboard users across inputs and links. */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

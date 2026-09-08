@@ -20,6 +20,8 @@ export interface LakeSpecies {
 export interface Lake {
   wbic: number;
   name: string;
+  /** Other spellings this lake is known by; searched but not displayed. */
+  altNames: string[];
   county: string | null;
   counties: string[];
   acres: number;
@@ -86,13 +88,19 @@ export function searchLakes(query: string, limit = 40): Lake[] {
 
   const scored: { lake: Lake; rank: number }[] = [];
   for (const lake of LAKES) {
-    const name = normalize(lake.name);
-    let rank: number;
-    if (name === q) rank = 0;
-    else if (name.startsWith(q)) rank = 1;
-    else if (name.includes(q)) rank = 2;
-    else if (lake.county && normalize(lake.county).startsWith(q)) rank = 3;
-    else continue;
+    // Match the display name first, then any alternate spelling. Anglers search
+    // "Lake Geneva"; the DNR calls that water "Geneva Lake".
+    const names = [lake.name, ...(lake.altNames ?? [])].map(normalize);
+    let rank = Infinity;
+    for (const name of names) {
+      if (name === q) rank = Math.min(rank, 0);
+      else if (name.startsWith(q)) rank = Math.min(rank, 1);
+      else if (name.includes(q)) rank = Math.min(rank, 2);
+    }
+    if (rank === Infinity && lake.county && normalize(lake.county).startsWith(q)) {
+      rank = 3;
+    }
+    if (rank === Infinity) continue;
     scored.push({ lake, rank });
   }
 

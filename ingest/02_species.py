@@ -46,7 +46,7 @@ RE_LI = re.compile(r"<li>(.*?)</li>", re.I | re.S)
 # "Largemouth Bass (Common)" -> name, abundance
 RE_SPECIES = re.compile(r"^(.*?)\s*\((Abundant|Common|Present)\)$", re.I)
 RE_LANDINGS = re.compile(r"Boat\s+Landings\s*\((\d+)\)", re.I)
-RE_TITLE_H2 = re.compile(r"<h2[^>]*>\s*([^<]+?)\s*</h2>", re.I)
+RE_TITLE_H1 = re.compile(r"<h1[^>]*>\s*([^<]+?)\s*</h1>", re.I)
 
 
 def strip_tags(fragment: str) -> str:
@@ -94,9 +94,9 @@ def parse(wbic: int, page: str) -> dict:
     if m := RE_LANDINGS.search(text):
         rec["boat_landings"] = int(m.group(1))
 
-    # The <h2> carries the official DNR name, which is often more complete than
+    # The <h1> carries the official DNR name, which is often more complete than
     # the hydro layer's ("Big Muskego Lake" vs "Muskego Lake").
-    if m := RE_TITLE_H2.search(page):
+    if m := RE_TITLE_H1.search(page):
         title = html.unescape(m.group(1)).strip()
         if title and title.lower() not in ("lakes", "wisconsin lakes"):
             rec["official_name"] = title

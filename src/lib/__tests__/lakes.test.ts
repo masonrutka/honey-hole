@@ -95,3 +95,42 @@ describe("regulations", () => {
     expect(getRegulations(-1)).toEqual([]);
   });
 });
+
+describe("name aliases", () => {
+  it("finds Geneva Lake by the name people actually use", () => {
+    // The DNR calls it "Geneva Lake"; everyone else says "Lake Geneva".
+    const byCommon = searchLakes("lake geneva");
+    const byOfficial = searchLakes("geneva lake");
+    expect(byCommon.length).toBeGreaterThan(0);
+    expect(byOfficial.length).toBeGreaterThan(0);
+    expect(byCommon[0].wbic).toBe(byOfficial[0].wbic);
+  });
+
+  it("finds Big Muskego Lake by either name", () => {
+    expect(searchLakes("big muskego").some((l) => l.wbic === MUSKEGO_WBIC)).toBe(true);
+    expect(searchLakes("muskego lake").some((l) => l.wbic === MUSKEGO_WBIC)).toBe(true);
+  });
+
+  it("never displays a DNR internal code as a lake name", () => {
+    // e.g. "Wisconsin R Fl C3-Stevens Pt" should not be what a user sees.
+    const near = nearbyLakes(44.5, -89.5, 1000, 0);
+    for (const lake of near) {
+      expect(lake.name, lake.name).not.toMatch(/\b(R|Fl|Cr|Ck)\b/);
+    }
+  });
+
+  it("keeps the readable name when the DNR title is an internal code", () => {
+    const hits = searchLakes("wisconsin river flowage");
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0].name).toBe("Wisconsin River Flowage");
+    expect(hits[0].altNames.join(" ")).toMatch(/Wisconsin R Fl/);
+  });
+});
+
+describe("species coverage after the full DNR import", () => {
+  it("has species for the large majority of lakes", () => {
+    const sample = nearbyLakes(44.5, -89.5, 1000, 20);
+    const withSpecies = sample.filter((l) => l.species.length > 0);
+    expect(withSpecies.length / sample.length).toBeGreaterThan(0.7);
+  });
+});

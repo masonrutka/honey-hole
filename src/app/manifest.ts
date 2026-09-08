@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Sonar — Wisconsin fishing intelligence",
-    short_name: "Sonar",
+    name: "Honey Hole — Wisconsin fishing intelligence",
+    short_name: "Honey Hole",
     description:
       "Species, regulations, conditions and bait suggestions for Wisconsin lakes.",
     start_url: "/",

@@ -1,4 +1,4 @@
-# Deploying Sonar
+# Deploying Honey Hole
 
 The app is a standard Next.js project with no database, no environment variables
 and no API keys. That makes deployment about as simple as it gets: push to
@@ -18,20 +18,20 @@ code it shows you.
 Then create the repo and push:
 
 ```bash
-gh repo create sonar-wi-fishing --public --source=. --remote=origin --push
+gh repo create honey-hole --public --source=. --remote=origin --push
 ```
 
 ## 2. Deploy on Vercel
 
 1. Go to **[vercel.com/new](https://vercel.com/new)** and sign in with GitHub.
-2. Import the `sonar-wi-fishing` repo.
+2. Import the `honey-hole` repo.
 3. Leave every setting at its default — Vercel detects Next.js automatically.
 4. Click **Deploy**.
 
 There is nothing to configure. No environment variables, no build overrides, no
 database connection string.
 
-You get a URL like `sonar-wi-fishing.vercel.app` in about a minute. Every push to
+You get a URL like `honey-hole.vercel.app` in about a minute. Every push to
 `main` redeploys automatically.
 
 ## 3. Optional: a custom domain

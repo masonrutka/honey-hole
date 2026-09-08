@@ -1,11 +1,11 @@
-# Sonar — Wisconsin lake and fishing intelligence
+# Honey Hole — Wisconsin lake and fishing intelligence
 
 Species, regulations, live conditions and bait suggestions for **5,028 Wisconsin
 lakes**, built entirely on open Wisconsin DNR data.
 
 Wisconsin publishes an unusual amount of high-quality fisheries data, but it is
 scattered across three separate systems and none of it is designed to be read on
-a phone at 5am. Sonar joins it together, keyed by the DNR's own waterbody id
+a phone at 5am. Honey Hole joins it together, keyed by the DNR's own waterbody id
 (WBIC), and adds a transparent bite forecast on top.
 
 ## What it does
@@ -101,7 +101,7 @@ cached to disk, and safe to interrupt and resume.
 ## Known limitations
 
 - **Water temperature is estimated**, not measured. USGS gauges cover rivers,
-  not inland lakes, so there is no free live feed. Sonar models surface temp
+  not inland lakes, so there is no free live feed. Honey Hole models surface temp
   from recent air temperatures damped by lake size and depth, and labels it as
   an estimate everywhere it appears.
 - **The bite score is a heuristic**, not a validated model. It encodes

@@ -3,17 +3,17 @@ import { totalLakes } from "@/lib/lakes";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Where Sonar's data comes from, and what its ratings do and don't mean.",
+  description: "Where Honey Hole's data comes from, and what its ratings do and don't mean.",
 };
 
 export default function AboutPage() {
   const count = totalLakes();
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 space-y-6">
-      <h1 className="text-3xl font-semibold tracking-tight">About Sonar</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">About Honey Hole</h1>
 
       <p className="text-muted text-pretty">
-        Sonar pulls together public Wisconsin data that is genuinely useful on the
+        Honey Hole pulls together public Wisconsin data that is genuinely useful on the
         water but scattered across several DNR systems: which fish live in a lake,
         what you are allowed to keep, and whether today is worth the trip.
       </p>

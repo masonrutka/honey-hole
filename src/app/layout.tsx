@@ -8,8 +8,8 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: {
-    default: "Sonar — Wisconsin lake and fishing intelligence",
-    template: "%s — Sonar",
+    default: "Honey Hole — Wisconsin lake and fishing intelligence",
+    template: "%s — Honey Hole",
   },
   description:
     "Species, regulations, conditions and bait suggestions for 5,000 Wisconsin lakes, built on open Wisconsin DNR data.",
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 />
                 <path fill="currentColor" opacity=".55" d="M2 13c1.6 2.4 3.4 4.2 5.2 5.3-.6-1.9-.7-3.7-.3-5.3-1.7-.1-3.3-.1-4.9 0Z" />
               </svg>
-              Sonar
+              Honey Hole
             </Link>
             <span className="text-xs text-muted hidden sm:inline">Wisconsin</span>
             <nav className="ml-auto flex items-center gap-4 text-sm">

@@ -62,6 +62,25 @@ def count(layer: str, where: str) -> int:
     return _get(q, {"where": where, "returnCountOnly": "true", "f": "json"})["count"]
 
 
+_OID_CACHE: dict[str, str] = {}
+
+
+def object_id_field(layer: str) -> str:
+    """Look up a layer's OID field. Layers vary -- waterbodies use OBJECTID,
+    the regulations layer uses ID -- and stable paging needs a real sort key."""
+    if layer not in _OID_CACHE:
+        meta = _get(layer, {"f": "json"})
+        oid = meta.get("objectIdField")
+        if not oid:
+            candidates = [
+                f["name"] for f in meta.get("fields", [])
+                if f.get("type") == "esriFieldTypeOID"
+            ]
+            oid = candidates[0] if candidates else "OBJECTID"
+        _OID_CACHE[layer] = oid
+    return _OID_CACHE[layer]
+
+
 def query_all(
     layer: str,
     where: str,
@@ -77,6 +96,7 @@ def query_all(
     mandatory. Requesting outSR=4326 makes ArcGIS reproject Wisconsin Transverse
     Mercator to WGS84 server-side -- no pyproj needed.
     """
+    oid = object_id_field(layer)
     offset = 0
     while True:
         params = {
@@ -85,7 +105,7 @@ def query_all(
             "returnGeometry": "true" if geometry else "false",
             "resultOffset": offset,
             "resultRecordCount": page_size,
-            "orderByFields": "OBJECTID",
+            "orderByFields": oid,
             "f": "json",
         }
         if geometry:

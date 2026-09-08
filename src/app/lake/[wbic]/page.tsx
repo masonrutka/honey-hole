@@ -244,19 +244,22 @@ export default async function LakePage({ params, searchParams }: Props) {
         ) : (
           <ul className="mt-2 grid gap-2 sm:grid-cols-2">
             {present.map((s) => (
-              <li
-                key={s.key}
-                className="rounded-lg border border-edge bg-surface px-4 py-3"
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="font-medium">{s.profile.name}</span>
-                  {s.abundance && (
-                    <span className="text-[11px] uppercase tracking-wide text-accent">
-                      {s.abundance}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-muted text-pretty">{s.profile.blurb}</p>
+              <li key={s.key}>
+                <Link
+                  href={`/species/${s.key}`}
+                  className="block rounded-lg border border-edge bg-surface px-4 py-3
+                             hover:border-accent/60 hover:bg-surface-2 transition-colors"
+                >
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-medium">{s.profile.name}</span>
+                    {s.abundance && (
+                      <span className="text-[11px] uppercase tracking-wide text-accent">
+                        {s.abundance}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-muted text-pretty">{s.profile.blurb}</p>
+                </Link>
               </li>
             ))}
           </ul>

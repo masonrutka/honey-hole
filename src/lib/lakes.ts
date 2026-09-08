@@ -128,6 +128,43 @@ export function nearbyLakes(
     .slice(0, limit);
 }
 
+/** Lakes known to hold a given species, best water first. */
+export function lakesWithSpecies(
+  key: SpeciesKey,
+  opts: { near?: { lat: number; lon: number }; limit?: number } = {},
+): NearbyLake[] {
+  const { near, limit = 50 } = opts;
+  const matches = LAKES.filter((l) => l.species.some((s) => s.key === key));
+
+  const withDistance = matches.map((l) => ({
+    ...l,
+    distanceMi: near ? distanceMiles(near.lat, near.lon, l.lat, l.lon) : 0,
+  }));
+
+  if (near) {
+    withDistance.sort((a, b) => a.distanceMi - b.distanceMi);
+  } else {
+    // Without a location, rank by how strongly the DNR rates the population,
+    // then by size -- a big lake where they are "Common" beats a pond.
+    const rank = { Abundant: 0, Common: 1, Present: 2 } as const;
+    withDistance.sort((a, b) => {
+      const ra = rank[a.species.find((s) => s.key === key)!.abundance ?? "Present"];
+      const rb = rank[b.species.find((s) => s.key === key)!.abundance ?? "Present"];
+      return ra - rb || b.acres - a.acres;
+    });
+  }
+  return withDistance.slice(0, limit);
+}
+
+/** How many lakes hold each species -- drives the species index page. */
+export function speciesCounts(): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const lake of LAKES) {
+    for (const s of lake.species) counts[s.key] = (counts[s.key] ?? 0) + 1;
+  }
+  return counts;
+}
+
 /** Species present in a lake, resolved to full profiles for display. */
 export function lakeSpeciesProfiles(lake: Lake) {
   return lake.species

@@ -43,6 +43,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </Link>
             <span className="text-xs text-muted hidden sm:inline">Wisconsin</span>
             <nav className="ml-auto flex items-center gap-4 text-sm">
+              <Link href="/species" className="text-muted hover:text-foreground transition-colors">
+                Species
+              </Link>
               <Link href="/about" className="text-muted hover:text-foreground transition-colors">
                 About
               </Link>

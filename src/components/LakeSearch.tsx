@@ -53,6 +53,15 @@ export default function LakeSearch() {
       setError("This browser cannot share your location.");
       return;
     }
+    // Browsers refuse geolocation outside a secure context. localhost counts as
+    // secure, but testing over a LAN IP on http does not -- and the failure
+    // surfaces as a generic "permission denied", which is misleading.
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setError(
+        "Location needs a secure connection. Open this over https, or on localhost — it works on the deployed site.",
+      );
+      return;
+    }
     setLocating(true);
     setError(null);
     navigator.geolocation.getCurrentPosition(
@@ -72,11 +81,17 @@ export default function LakeSearch() {
           setLocating(false);
         }
       },
-      () => {
-        setError("Location permission denied.");
+      (err) => {
+        const reason =
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission was denied. You can allow it in your browser's site settings."
+            : err.code === err.POSITION_UNAVAILABLE
+              ? "Your location is unavailable right now. Try searching by name instead."
+              : "Locating timed out. Try again, or search by name.";
+        setError(reason);
         setLocating(false);
       },
-      { timeout: 10000 },
+      { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 },
     );
   }
 

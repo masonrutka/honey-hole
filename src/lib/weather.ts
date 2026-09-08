@@ -169,3 +169,99 @@ export function celestialFor(
     moonPhase: illum.phase,
   };
 }
+
+/**
+ * Weather for many lakes in one request.
+ *
+ * Open-Meteo accepts comma-separated coordinate lists and returns an array, so
+ * ranking 40 lakes costs one HTTP call rather than 40. Coordinates are snapped
+ * to a coarse grid first: weather does not meaningfully differ between two
+ * lakes ten miles apart, and deduping keeps the request small.
+ */
+const GRID_DEGREES = 0.25; // ~17 miles
+
+function gridKey(lat: number, lon: number): string {
+  const gLat = Math.round(lat / GRID_DEGREES) * GRID_DEGREES;
+  const gLon = Math.round(lon / GRID_DEGREES) * GRID_DEGREES;
+  return `${gLat.toFixed(2)},${gLon.toFixed(2)}`;
+}
+
+export async function fetchWeatherForMany(
+  points: { lat: number; lon: number }[],
+  revalidateSeconds = 3600,
+): Promise<Map<string, WeatherBundle>> {
+  const cells = new Map<string, { lat: number; lon: number }>();
+  for (const p of points) {
+    const key = gridKey(p.lat, p.lon);
+    if (!cells.has(key)) {
+      const [lat, lon] = key.split(",").map(Number);
+      cells.set(key, { lat, lon });
+    }
+  }
+  if (cells.size === 0) return new Map();
+
+  const entries = [...cells.entries()];
+  const params = new URLSearchParams({
+    latitude: entries.map(([, c]) => c.lat.toFixed(4)).join(","),
+    longitude: entries.map(([, c]) => c.lon.toFixed(4)).join(","),
+    hourly: [
+      "temperature_2m",
+      "surface_pressure",
+      "wind_speed_10m",
+      "wind_direction_10m",
+      "cloud_cover",
+      "precipitation",
+    ].join(","),
+    daily: ["sunrise", "sunset", "temperature_2m_mean"].join(","),
+    past_days: String(PAST_DAYS),
+    forecast_days: "1",
+    temperature_unit: "fahrenheit",
+    wind_speed_unit: "mph",
+    precipitation_unit: "inch",
+    timezone: "auto",
+  });
+
+  const res = await fetch(`${ENDPOINT}?${params}`, {
+    next: { revalidate: revalidateSeconds },
+  });
+  if (!res.ok) throw new Error(`Open-Meteo ${res.status}: ${res.statusText}`);
+
+  const payload = await res.json();
+  // A single coordinate returns an object; several return an array.
+  const list = Array.isArray(payload) ? payload : [payload];
+
+  const out = new Map<string, WeatherBundle>();
+  list.forEach((d, i) => {
+    const key = entries[i]?.[0];
+    if (!key || !d?.hourly) return;
+    const offset: number = d.utc_offset_seconds ?? 0;
+    const h = d.hourly;
+    out.set(key, {
+      hours: h.time.map((t: string, j: number) => ({
+        time: toInstant(t, offset).toISOString(),
+        tempF: h.temperature_2m[j],
+        pressureHpa: h.surface_pressure[j],
+        windMph: h.wind_speed_10m[j],
+        windDirDeg: h.wind_direction_10m[j],
+        cloudPct: h.cloud_cover[j],
+        precipIn: h.precipitation[j],
+      })),
+      dailyMeanAirF: d.daily.temperature_2m_mean,
+      timezone: d.timezone,
+      utcOffsetSeconds: offset,
+      sunrise: d.daily.sunrise.map((s: string) => toInstant(s, offset)),
+      sunset: d.daily.sunset.map((s: string) => toInstant(s, offset)),
+      todayIndex: PAST_DAYS,
+    });
+  });
+  return out;
+}
+
+/** Look up the bundle covering a lake's coordinates. */
+export function bundleFor(
+  bundles: Map<string, WeatherBundle>,
+  lat: number,
+  lon: number,
+): WeatherBundle | undefined {
+  return bundles.get(gridKey(lat, lon));
+}

@@ -122,6 +122,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=2000,
                     help="how many lakes, largest first (0 = all)")
+    ap.add_argument("--from-cache", action="store_true",
+                    help="parse only already-cached pages; never fetch. Use this "
+                         "to re-parse after changing the parser, or to build a "
+                         "partial dataset while a scrape is still running.")
     args = ap.parse_args()
 
     if not LAKES_IN.exists():
@@ -132,9 +136,16 @@ def main() -> int:
     if args.limit:
         lakes = lakes[: args.limit]
 
-    results, no_species = [], 0
+    results, no_species, skipped = [], 0, 0
     for i, lake in enumerate(lakes, 1):
-        page = fetch(lake["wbic"])
+        if args.from_cache:
+            path = CACHE / f"{lake['wbic']}.html"
+            if not path.exists():
+                skipped += 1
+                continue
+            page = path.read_text(encoding="utf-8", errors="replace")
+        else:
+            page = fetch(lake["wbic"])
         if page is None:
             continue
         rec = parse(lake["wbic"], page)
@@ -142,12 +153,14 @@ def main() -> int:
             no_species += 1
         results.append(rec)
 
-        if i % 100 == 0 or i == len(lakes):
+        if not args.from_cache and (i % 100 == 0 or i == len(lakes)):
             got = sum(len(r["species"]) for r in results)
             print(f"  {i:,}/{len(lakes):,} lakes | {got:,} species rows | "
                   f"{no_species:,} with none")
 
     OUT.write_text(json.dumps(results, indent=2))
+    if skipped:
+        print(f"skipped {skipped:,} lakes with no cached page")
 
     species_counts: dict[str, int] = {}
     for r in results:

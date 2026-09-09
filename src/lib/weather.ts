@@ -32,6 +32,8 @@ function toInstant(local: string, utcOffsetSeconds: number): Date {
 }
 
 const PAST_DAYS = 7;
+/** How far ahead the outlook strip can look. Open-Meteo allows up to 16. */
+export const FORECAST_DAYS = 7;
 
 export async function fetchWeather(
   lat: number,
@@ -51,7 +53,7 @@ export async function fetchWeather(
     ].join(","),
     daily: ["sunrise", "sunset", "temperature_2m_mean"].join(","),
     past_days: String(PAST_DAYS),
-    forecast_days: "3",
+    forecast_days: String(FORECAST_DAYS),
     temperature_unit: "fahrenheit",
     wind_speed_unit: "mph",
     precipitation_unit: "inch",

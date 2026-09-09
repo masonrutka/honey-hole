@@ -65,6 +65,20 @@ export interface BiteForecast {
 
 const BASELINE = 50;
 
+/*
+ * Weight calibration.
+ *
+ * The first cut let the positive factors sum to +79 against a baseline of 50,
+ * so any decent evening pinned at 100 and a whole week of forecasts came back
+ * 100 / 99 / 100 / 93 / 99 -- useless for choosing a day. Weights are now sized
+ * so that a genuinely perfect alignment approaches 100 while an ordinary good
+ * night lands in the high 70s, which is what leaves the scale room to rank.
+ *
+ * Relative sizing is deliberate: barometric trend carries the most weight
+ * because it has the strongest documented link to feeding, and solunar the
+ * least because it has the weakest.
+ */
+
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
 function hoursBetween(a: Date, b: Date): number {
@@ -105,30 +119,30 @@ function pressureFactor(hours: WeatherHour[], at: Date): Factor {
     return {
       label: "Pressure",
       detail: `Falling fast (${mb} mb in 6h) — feeding window ahead of a front`,
-      delta: 16,
+      delta: 14,
     };
   if (change <= -0.7)
     return {
       label: "Pressure",
       detail: `Falling steadily (${mb} mb in 6h) — fish moving up to feed`,
-      delta: 11,
+      delta: 9,
     };
   if (change < 0.7)
     return {
       label: "Pressure",
       detail: `Stable (${mb} mb in 6h) — settled, predictable patterns`,
-      delta: 3,
+      delta: 2,
     };
   if (change < 2.5)
     return {
       label: "Pressure",
       detail: `Rising (+${mb} mb in 6h) — fish easing back off the bite`,
-      delta: -6,
+      delta: -5,
     };
   return {
     label: "Pressure",
     detail: `Rising sharply (+${mb} mb in 6h) — post-frontal shutdown likely`,
-    delta: -14,
+    delta: -12,
   };
 }
 
@@ -143,30 +157,30 @@ function windFactor(hours: WeatherHour[], at: Date): Factor {
     return {
       label: "Wind",
       detail: `Dead calm (${w} mph) — slick water, spooky fish`,
-      delta: -6,
+      delta: -5,
     };
   if (w <= 10)
     return {
       label: "Wind",
       detail: `Light ${dir} chop (${w} mph) — close to ideal`,
-      delta: 10,
+      delta: 7,
     };
   if (w <= 16)
     return {
       label: "Wind",
       detail: `Moderate ${dir} wind (${w} mph) — good on windblown structure`,
-      delta: 4,
+      delta: 3,
     };
   if (w <= 24)
     return {
       label: "Wind",
       detail: `Strong ${dir} wind (${w} mph) — boat control gets difficult`,
-      delta: -5,
+      delta: -4,
     };
   return {
     label: "Wind",
     detail: `${w} mph ${dir} — small water only, if at all`,
-    delta: -13,
+    delta: -11,
   };
 }
 
@@ -177,17 +191,17 @@ function cloudFactor(hours: WeatherHour[], at: Date, light: LightPreference): Fa
   const sky = c >= 70 ? "Overcast" : c >= 30 ? "Partly cloudy" : "Clear";
 
   if (light === "low") {
-    if (c >= 70) return { label: "Sky", detail: `${sky} (${c}%) — extends the low-light bite all day`, delta: 9 };
-    if (c >= 30) return { label: "Sky", detail: `${sky} (${c}%) — workable`, delta: 3 };
-    return { label: "Sky", detail: `${sky} (${c}%) — bright sun pushes them deep`, delta: -6 };
+    if (c >= 70) return { label: "Sky", detail: `${sky} (${c}%) — extends the low-light bite all day`, delta: 6 };
+    if (c >= 30) return { label: "Sky", detail: `${sky} (${c}%) — workable`, delta: 2 };
+    return { label: "Sky", detail: `${sky} (${c}%) — bright sun pushes them deep`, delta: -5 };
   }
   if (light === "bright") {
-    if (c < 30) return { label: "Sky", detail: `${sky} (${c}%) — sun warms the shallows and gets them active`, delta: 5 };
-    if (c < 70) return { label: "Sky", detail: `${sky} (${c}%) — fine`, delta: 2 };
+    if (c < 30) return { label: "Sky", detail: `${sky} (${c}%) — sun warms the shallows and gets them active`, delta: 4 };
+    if (c < 70) return { label: "Sky", detail: `${sky} (${c}%) — fine`, delta: 1 };
     return { label: "Sky", detail: `${sky} (${c}%) — less active without sun`, delta: -2 };
   }
-  if (c >= 30 && c < 80) return { label: "Sky", detail: `${sky} (${c}%) — ideal mix`, delta: 6 };
-  if (c >= 80) return { label: "Sky", detail: `${sky} (${c}%) — fish roam wider off cover`, delta: 3 };
+  if (c >= 30 && c < 80) return { label: "Sky", detail: `${sky} (${c}%) — ideal mix`, delta: 5 };
+  if (c >= 80) return { label: "Sky", detail: `${sky} (${c}%) — fish roam wider off cover`, delta: 2 };
   return { label: "Sky", detail: `${sky} (${c}%) — expect them tight to cover`, delta: -2 };
 }
 
@@ -199,21 +213,21 @@ function timeOfDayFactor(at: Date, c: CelestialTimes, light: LightPreference): F
   const which = toSunrise < toSunset ? "sunrise" : "sunset";
   const isDay = at > c.sunrise && at < c.sunset;
 
-  const peak = light === "low" ? 15 : light === "moderate" ? 10 : 5;
+  const peak = light === "low" ? 10 : light === "moderate" ? 7 : 4;
 
   if (edge <= 1)
     return { label: "Time of day", detail: `Within an hour of ${which} — the daily peak`, delta: peak };
   if (edge <= 2)
     return { label: "Time of day", detail: `Approaching the ${which} window`, delta: Math.round(peak * 0.6) };
   if (!isDay) {
-    const night = light === "low" ? 6 : -4;
+    const night = light === "low" ? 4 : -4;
     return {
       label: "Time of day",
       detail: light === "low" ? "After dark — good for night feeders" : "After dark — most fish are resting",
       delta: night,
     };
   }
-  const midday = light === "bright" ? 3 : light === "moderate" ? -3 : -7;
+  const midday = light === "bright" ? 2 : light === "moderate" ? -3 : -6;
   return {
     label: "Time of day",
     detail: light === "bright" ? "Midday sun — fine for panfish" : "Midday — the slowest stretch",
@@ -240,19 +254,19 @@ function waterTempFactor(waterTempF: number, species: SpeciesKey): Factor {
     };
   }
   if (t >= lo && t <= hi) {
-    return { label: "Water temp", detail: `~${t}°F — squarely in the active feeding range`, delta: 12 };
+    return { label: "Water temp", detail: `~${t}°F — squarely in the active feeding range`, delta: 9 };
   }
   if (t < tlo || t > thi) {
     return {
       label: "Water temp",
       detail: `~${t}°F — outside what ${p.name.toLowerCase()} tolerate; expect a slow day`,
-      delta: -15,
+      delta: -13,
     };
   }
   // Inside tolerated but outside optimal: scale by how far off we are.
   const distance = t < lo ? lo - t : t - hi;
   const room = t < lo ? Math.max(1, lo - tlo) : Math.max(1, thi - hi);
-  const delta = Math.round(6 - 14 * clamp(distance / room, 0, 1));
+  const delta = Math.round(5 - 12 * clamp(distance / room, 0, 1));
   return {
     label: "Water temp",
     detail: `~${t}°F — ${t < lo ? "cooler" : "warmer"} than ideal, metabolism is off peak`,
@@ -270,13 +284,13 @@ function solunarFactor(at: Date, c: CelestialTimes): Factor {
 
   // Illumination extremes (new and full) run the strongest tides and feeding.
   const phaseStrength = Math.abs(Math.cos(2 * Math.PI * c.moonPhase)); // 1 at new/full
-  const phaseBonus = Math.round(phaseStrength * 4);
+  const phaseBonus = Math.round(phaseStrength * 2);
   const phaseName = moonPhaseName(c.moonPhase);
 
   if (nearMajor)
-    return { label: "Solunar", detail: `Major period — moon overhead or underfoot (${phaseName})`, delta: 8 + phaseBonus };
+    return { label: "Solunar", detail: `Major period — moon overhead or underfoot (${phaseName})`, delta: 5 + phaseBonus };
   if (nearMinor)
-    return { label: "Solunar", detail: `Minor period — moonrise/moonset (${phaseName})`, delta: 4 + phaseBonus };
+    return { label: "Solunar", detail: `Minor period — moonrise/moonset (${phaseName})`, delta: 2 + phaseBonus };
   return { label: "Solunar", detail: `No moon period active (${phaseName})`, delta: phaseBonus - 2 };
 }
 
@@ -285,9 +299,9 @@ function precipFactor(hours: WeatherHour[], at: Date): Factor {
   if (!now) return { label: "Precipitation", detail: "No data", delta: 0 };
   const p = now.precipIn;
   if (p === 0) return { label: "Precipitation", detail: "Dry", delta: 0 };
-  if (p < 0.05) return { label: "Precipitation", detail: "Light drizzle — softens light, often helps", delta: 5 };
-  if (p < 0.2) return { label: "Precipitation", detail: "Steady rain — good bite, wet day", delta: 2 };
-  return { label: "Precipitation", detail: "Heavy rain — runoff and muddy water", delta: -9 };
+  if (p < 0.05) return { label: "Precipitation", detail: "Light drizzle — softens light, often helps", delta: 3 };
+  if (p < 0.2) return { label: "Precipitation", detail: "Steady rain — good bite, wet day", delta: 1 };
+  return { label: "Precipitation", detail: "Heavy rain — runoff and muddy water", delta: -7 };
 }
 
 // --- helpers ---------------------------------------------------------------
@@ -311,8 +325,10 @@ export function moonPhaseName(phase: number): string {
 }
 
 export function ratingFor(score: number): Rating {
-  if (score >= 78) return "Prime";
-  if (score >= 62) return "Good";
+  // Prime should be rare enough to mean something. Under the recalibrated
+  // weights a strong day lands in the low-to-mid 80s, so the bar sits there.
+  if (score >= 82) return "Prime";
+  if (score >= 64) return "Good";
   if (score >= 45) return "Fair";
   if (score >= 30) return "Slow";
   return "Poor";

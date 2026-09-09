@@ -6,8 +6,10 @@ import { suggestBaits, seasonFor, skyFor, windBandFor } from "@/lib/bait";
 import { SPECIES, type SpeciesKey } from "@/lib/species";
 import type { Lake } from "@/lib/lakes";
 import { lakeSpeciesProfiles } from "@/lib/lakes";
+import { buildOutlook } from "@/lib/timeline";
 import BiteScore from "./BiteScore";
 import FactorList from "./FactorList";
+import OutlookStrip from "./OutlookStrip";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -83,6 +85,17 @@ export default async function ConditionsPanel({
   });
 
   const season = seasonFor(now.getMonth() + 1, waterTempF);
+
+  // "When should I go" -- the planning view. Reuses the hourly data already
+  // fetched above, so this costs no extra requests.
+  const outlook = buildOutlook(
+    weather,
+    { acres: lake.acres, maxDepthFt: lake.maxDepthFt },
+    selected,
+    lake.lat,
+    lake.lon,
+    5,
+  );
   const clock = (d: Date) =>
     d.toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -120,6 +133,12 @@ export default async function ConditionsPanel({
 
         <p className="mt-3 text-xs text-muted text-pretty">{profile.blurb}</p>
       </section>
+
+      <OutlookStrip
+        days={outlook}
+        timezone={weather.timezone}
+        speciesName={profile.name}
+      />
 
       <section className="mt-6">
         <h2 className="text-sm font-semibold">Right now on {lake.name}</h2>

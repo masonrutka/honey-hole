@@ -89,7 +89,7 @@ describe("water temperature is species-specific", () => {
       hours: series(), at: NOON, celestial: celestial(), species: "trout", waterTempF: 84,
     });
     const temp = f.factors.find((x) => x.label === "Water temp")!;
-    expect(temp.delta).toBeLessThanOrEqual(-15);
+    expect(temp.delta).toBeLessThanOrEqual(-12);
   });
 
   it("marks the spawn window rather than treating it as a peak", () => {
@@ -218,5 +218,53 @@ describe("summary text", () => {
     expect(f.summary).not.toContain("sse ");
     // ...while still reading as lowercase prose at the start.
     expect(f.summary.startsWith(f.summary[0].toLowerCase())).toBe(true);
+  });
+});
+
+
+describe("scale calibration", () => {
+  /*
+   * These exist because the first weighting let any decent evening reach 100.
+   * A whole week of forecasts came back 100/99/100/93/99, which makes the
+   * multi-day outlook useless -- you cannot pick a day when every day is
+   * perfect. The scale has to keep headroom.
+   */
+
+  it("does not peg the scale on a merely good evening", () => {
+    const good = biteForecast({
+      hours: series({ windMph: 6, cloudPct: 90 }, -0.15), // gently falling
+      at: new Date(`${DAY}T20:00`), // after dark
+      celestial: celestial({ moonPhase: 0.85 }),
+      species: "walleye",
+      waterTempF: 74, // slightly warm, not ideal
+    });
+    expect(good.score).toBeGreaterThan(55);
+    expect(good.score).toBeLessThan(90);
+  });
+
+  it("still reaches the top of the scale when everything genuinely aligns", () => {
+    const perfect = biteForecast({
+      hours: series({ windMph: 7, cloudPct: 85, precipIn: 0.02 }, -0.6),
+      at: new Date(`${DAY}T05:30`), // dawn
+      celestial: celestial({ moonTransit: new Date(`${DAY}T05:30`), moonPhase: 0.5 }),
+      species: "walleye",
+      waterTempF: 67, // dead centre of optimal
+    });
+    expect(perfect.score).toBeGreaterThan(88);
+    expect(perfect.score).toBeLessThanOrEqual(100);
+  });
+
+  it("keeps a usable gap between a good day and a great one", () => {
+    const base = { celestial: celestial(), species: "walleye", waterTempF: 68 } as const;
+    const ok = biteForecast({
+      ...base, hours: series({ windMph: 3, cloudPct: 40 }), at: new Date(`${DAY}T14:00`),
+    });
+    const great = biteForecast({
+      ...base,
+      hours: series({ windMph: 7, cloudPct: 85 }, -0.6),
+      at: new Date(`${DAY}T05:30`),
+    });
+    // Enough separation that ranking days against each other means something.
+    expect(great.score - ok.score).toBeGreaterThan(20);
   });
 });

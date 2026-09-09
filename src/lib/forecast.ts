@@ -327,7 +327,7 @@ function turnoverFactor(
   // more disruptively.
   if (waterTempF > 60 || waterTempF < 45) return null;
 
-  const severity = depth >= 50 ? "deep" : "moderately deep";
+  // Deeper lakes stratify harder, so turnover hits them more sharply.
   const delta = depth >= 50 ? -14 : -9;
   return {
     label: "Turnover",

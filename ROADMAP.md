@@ -7,12 +7,13 @@ Ordered by what actually makes the app better, not by what is fun to build.
 
 ---
 
-## Horizon 1 — finish the lake app
+## Horizon 1 — finish the lake app  ·  COMPLETE
 
-Three things, then the lake side is done and worth leaving alone.
+All four shipped. The lake side is done and worth leaving alone; the next real
+work is Horizon 2.
 
-### 1. Forecast timeline  ·  ~half a day
-**The biggest remaining gap.** The app answers "how is it right now" but not
+### 1. Forecast timeline  ·  DONE 2026-09-08
+~~**The biggest remaining gap.**~~ The app answers "how is it right now" but not
 "when should I go" — and the second question is the one anglers actually ask.
 You check a fishing app on Wednesday to plan Saturday.
 
@@ -46,13 +47,13 @@ means the outlook can actually distinguish one day from another.
 
 Re-run the script after any weight change.
 
-### 3. Favourites / recent lakes  ·  ~1 hour
-`localStorage`, no backend. In practice you check the same handful of lakes
-over and over.
+### 3. Favourites / recent lakes  ·  DONE 2026-09-09
+`localStorage`, no backend. Read through `useSyncExternalStore` so it does not
+mismatch the server render, with storage-event sync across tabs.
 
-### Also worth 30 minutes: an OG preview image
-So the link renders as a proper card when pasted into a résumé, LinkedIn or a
-text message. Next has built-in support for this.
+### OG preview images  ·  DONE 2026-09-09
+Cards for the site and for each lake, so a shared link shows the water's name,
+size, depth and species instead of a bare URL.
 
 ---
 

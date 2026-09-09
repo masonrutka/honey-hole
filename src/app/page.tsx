@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LakeSearch from "@/components/LakeSearch";
+import SavedLakes from "@/components/SavedLakes";
 import { featuredLakes, totalLakes } from "@/lib/lakes";
 
 export default function Home() {
@@ -21,6 +22,8 @@ export default function Home() {
           <LakeSearch />
         </div>
       </section>
+
+      <SavedLakes />
 
       <section className="pb-4">
         <h2 className="text-xs uppercase tracking-wide text-muted">Popular water</h2>

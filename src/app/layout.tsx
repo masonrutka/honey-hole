@@ -7,6 +7,13 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  // Absolute base for social image URLs. Vercel injects the deployment host;
+  // the production domain is the fallback.
+  metadataBase: new URL(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "https://honey-hole-one.vercel.app",
+  ),
   title: {
     default: "Honey Hole — Wisconsin lake and fishing intelligence",
     template: "%s — Honey Hole",

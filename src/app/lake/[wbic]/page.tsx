@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { getLake, getRegulations, lakeSpeciesProfiles } from "@/lib/lakes";
 import { SPECIES, type SpeciesKey } from "@/lib/species";
 import ConditionsPanel, { ConditionsSkeleton } from "@/components/ConditionsPanel";
+import LakeMemory from "@/components/LakeMemory";
 
 // Weather drives this page, so refresh hourly rather than on every request.
 export const revalidate = 3600;
@@ -68,6 +69,17 @@ export default async function LakePage({ params, searchParams }: Props) {
             : ""}
         {lake.boatLandings ? ` · ${lake.boatLandings} boat landings` : ""}
       </p>
+
+      <div className="mt-3">
+        <LakeMemory
+          lake={{
+            wbic: lake.wbic,
+            name: lake.name,
+            county: lake.county,
+            acres: lake.acres,
+          }}
+        />
+      </div>
 
       <div className="mt-6">
         <Suspense fallback={<ConditionsSkeleton />}>

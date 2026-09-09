@@ -53,10 +53,21 @@
   --font-display: var(--font-display);
 }
 
+html {
+  /*
+    The contour texture deliberately bleeds past the content column (-50vw),
+    which otherwise widens the document and lets the page scroll sideways --
+    195px of it on a 390px phone. `clip` trims that without creating a scroll
+    container, so the sticky header keeps working; `hidden` would break it.
+  */
+  overflow-x: clip;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 /*

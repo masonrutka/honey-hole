@@ -1,6 +1,7 @@
 import Link from "next/link";
 import LakeSearch from "@/components/LakeSearch";
 import SavedLakes from "@/components/SavedLakes";
+import LakePlate from "@/components/LakePlate";
 import { featuredLakes, totalLakes } from "@/lib/lakes";
 
 export default function Home() {
@@ -9,7 +10,8 @@ export default function Home() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4">
-      <section className="contours pt-16 pb-12 sm:pt-24 -mx-4 px-4">
+      <section className="relative pt-16 pb-12 sm:pt-28 -mx-4 px-4">
+        <LakePlate />
         <p className="text-[11px] uppercase tracking-[0.2em] text-accent">
           {count.toLocaleString()} Wisconsin lakes
         </p>
@@ -38,20 +40,25 @@ export default function Home() {
             <li key={lake.wbic}>
               <Link
                 href={`/lake/${lake.wbic}`}
-                className="group flex items-baseline gap-3 py-3 -mx-2 px-2 rounded
-                           hover:bg-surface transition-colors"
+                className="group block py-3 -mx-2 px-2 rounded hover:bg-surface
+                           transition-colors sm:flex sm:items-baseline sm:gap-3"
               >
                 <span className="display text-lg group-hover:text-accent transition-colors">
                   {lake.name}
                 </span>
-                <span className="text-xs text-muted">
+                <span className="hidden sm:inline text-xs text-muted">
                   {lake.county ? `${lake.county} County` : "Wisconsin"}
                 </span>
-                <span className="ml-auto text-xs text-muted tabular-nums whitespace-nowrap">
+                {/* One tidy meta line on a phone; a single row from sm up. */}
+                <span className="mt-0.5 flex gap-3 text-xs text-muted tabular-nums
+                                 sm:mt-0 sm:ml-auto sm:justify-end whitespace-nowrap">
+                  <span className="sm:hidden">
+                    {lake.county ? `${lake.county} County` : "Wisconsin"}
+                  </span>
                   {lake.species.length > 0 && (
-                    <span className="mr-3">{lake.species.length} species</span>
+                    <span>{lake.species.length} species</span>
                   )}
-                  {lake.acres.toLocaleString()} ac
+                  <span>{lake.acres.toLocaleString()} ac</span>
                 </span>
               </Link>
             </li>

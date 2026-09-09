@@ -37,6 +37,20 @@ export default function AboutPage() {
             per lake.
           </li>
           <li>
+            <span className="text-foreground">Bottom and hydrology.</span> The DNR
+            publishes bottom composition (sand, gravel, rock, muck) and a
+            hydrologic lake type for most lakes. Bottom drives where fish hold;
+            lake type stands in for clarity, since seepage and spring lakes run
+            clearer than stream-fed drainage lakes.
+          </li>
+          <li>
+            <span className="text-foreground">Stocking.</span> DNR hatchery
+            records, 2015 to present. These are keyed by waterbody name rather
+            than by id, so they are joined by name matching that places about
+            89% of records; the rest are millponds, quarries and lake chains
+            outside this dataset. Tribal and private stocking is not included.
+          </li>
+          <li>
             <span className="text-foreground">Weather.</span> Open-Meteo, for hourly
             temperature, barometric pressure, wind, cloud cover and precipitation.
           </li>
@@ -78,6 +92,12 @@ export default function AboutPage() {
         <p className="text-sm text-muted text-pretty">
           Regulations are reproduced from DNR data and can lag rule changes. The
           current regulations pamphlet is always the authority.
+        </p>
+        <p className="text-sm text-muted text-pretty">
+          A lake showing no stocking history means{" "}
+          <span className="text-foreground">none was matched</span>, not
+          necessarily that none happened — and stocking does not imply a fishery
+          has no natural reproduction. Many waters are stocked to supplement it.
         </p>
       </section>
     </div>

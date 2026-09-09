@@ -85,6 +85,7 @@ def main() -> int:
     details = {d["wbic"]: d for d in load("lake_details.json", [])}
     regs = {r["wbic"]: r for r in load("regulations.json", [])}
     facts = {f["wbic"]: f for f in load("lake_facts.json", [])}
+    stocking = load("stocking.json", {})
 
     # --- intern regulation text ------------------------------------------
     groups: list[str] = []
@@ -140,6 +141,7 @@ def main() -> int:
             "lon": lake["lon"],
             "kind": lake["hydrotype"],
             "boatLandings": d.get("boat_landings"),
+            "hasStocking": str(wbic) in stocking,
             "bottom": fact.get("bottom"),
             "lakeType": fact.get("lake_type"),
             "contourMapUrl": d.get("contour_map_url"),
@@ -151,6 +153,10 @@ def main() -> int:
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "lakes.json").write_text(json.dumps(out_lakes, separators=(",", ":")))
+    # Stocking ships as its own file: only ~20% of lakes have any, and the lake
+    # index is loaded on every search.
+    (OUT / "stocking.json").write_text(json.dumps(stocking, separators=(",", ":")))
+
     (OUT / "regulations.json").write_text(json.dumps(
         {"groups": groups, "texts": texts, "byWbic": by_wbic}, separators=(",", ":")
     ))
@@ -162,6 +168,9 @@ def main() -> int:
           f"-> src/data/regulations.json ({regs_mb:.2f} MB)")
     print(f"{with_species:,} lakes have species data "
           f"({len(details):,} detail pages scraped so far)")
+    st_mb = (OUT / "stocking.json").stat().st_size / 1e6
+    print(f"{len(stocking):,} lakes have stocking history "
+          f"-> src/data/stocking.json ({st_mb:.2f} MB)")
     print(f"{sum(1 for l in out_lakes if l['bottom']):,} lakes have bottom composition, "
           f"{sum(1 for l in out_lakes if l['lakeType']):,} have a lake type")
 

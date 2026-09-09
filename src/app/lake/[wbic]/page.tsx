@@ -8,6 +8,7 @@ import { SPECIES, type SpeciesKey } from "@/lib/species";
 import ConditionsPanel, { ConditionsSkeleton } from "@/components/ConditionsPanel";
 import LakeMemory from "@/components/LakeMemory";
 import LakeMap, { LakeMapSkeleton } from "@/components/LakeMap";
+import StockingHistory from "@/components/StockingHistory";
 
 // Weather drives this page, so refresh hourly rather than on every request.
 export const revalidate = 3600;
@@ -131,6 +132,8 @@ export default async function LakePage({ params, searchParams }: Props) {
           </ul>
         )}
       </section>
+
+      <StockingHistory wbic={lake.wbic} lakeName={lake.name} />
 
       {regulations.length > 0 && (
         <section className="mt-8">

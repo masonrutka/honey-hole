@@ -105,6 +105,7 @@ export function buildOutlook(
         celestial,
         species,
         waterTempF,
+        lake,
       });
       hours.push({ time: at, score });
     }

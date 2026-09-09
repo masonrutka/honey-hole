@@ -71,6 +71,7 @@ export default async function ConditionsPanel({
     celestial,
     species: selected,
     waterTempF,
+    lake: { maxDepthFt: lake.maxDepthFt, acres: lake.acres },
   });
 
   const current =

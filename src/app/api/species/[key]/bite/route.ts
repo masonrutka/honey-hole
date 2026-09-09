@@ -68,6 +68,7 @@ export async function GET(
       celestial,
       species,
       waterTempF,
+      lake: { maxDepthFt: lake.maxDepthFt, acres: lake.acres },
     });
 
     results.push({

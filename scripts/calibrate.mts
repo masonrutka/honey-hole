@@ -136,7 +136,10 @@ async function main() {
       for (const sp of species) {
         for (let hr = 5; hr <= 21; hr++) {
           const at = new Date(base + hr * 3_600_000);
-          const { score } = biteForecast({ hours: window, at, celestial, species: sp as SpeciesKey, waterTempF });
+          const { score } = biteForecast({
+            hours: window, at, celestial, species: sp as SpeciesKey, waterTempF,
+            lake: { maxDepthFt: lake.maxDepthFt, acres: lake.acres },
+          });
           allScores.push(score);
           if (!bySpecies.has(sp)) bySpecies.set(sp, []);
           bySpecies.get(sp)!.push(score);

@@ -45,6 +45,8 @@ export interface ForecastInput {
   species: SpeciesKey;
   /** Estimated surface water temperature (°F). */
   waterTempF: number;
+  /** Physical lake data. Depth decides whether the lake stratifies at all. */
+  lake?: { maxDepthFt?: number | null; acres?: number };
 }
 
 export interface Factor {
@@ -294,6 +296,46 @@ function solunarFactor(at: Date, c: CelestialTimes): Factor {
   return { label: "Solunar", detail: `No moon period active (${phaseName})`, delta: phaseBonus - 2 };
 }
 
+/**
+ * Fall turnover.
+ *
+ * A lake deep enough to stratify over summer holds a warm surface layer above
+ * cold water. When autumn cools the surface to roughly the temperature of the
+ * depths, the density difference collapses and the whole column mixes: water
+ * goes murky, oxygen and temperature even out, and fish that were stacked on
+ * predictable structure scatter through the basin. Anglers universally regard
+ * the week or two around turnover as the worst fishing of the year.
+ *
+ * Shallow lakes never stratify in the first place, so they never turn over --
+ * which is exactly why they stay reliable in October while the deep lakes go
+ * dead. Depth is what separates the two cases.
+ */
+function turnoverFactor(
+  at: Date,
+  waterTempF: number,
+  lake?: { maxDepthFt?: number | null },
+): Factor | null {
+  const depth = lake?.maxDepthFt;
+  // Below roughly 25 ft a Wisconsin lake mixes all summer and never sets up
+  // a thermocline to break down.
+  if (!depth || depth < 25) return null;
+
+  const month = at.getMonth() + 1; // 1-12
+  if (month < 9 || month > 11) return null;
+
+  // The mixing window. Deeper lakes stratify harder and turn over later and
+  // more disruptively.
+  if (waterTempF > 60 || waterTempF < 45) return null;
+
+  const severity = depth >= 50 ? "deep" : "moderately deep";
+  const delta = depth >= 50 ? -14 : -9;
+  return {
+    label: "Turnover",
+    detail: `~${Math.round(waterTempF)}°F on a ${depth} ft lake — likely fall turnover, fish scattered and water mixing`,
+    delta,
+  };
+}
+
 function precipFactor(hours: WeatherHour[], at: Date): Factor {
   const now = sampleAt(hours, at);
   if (!now) return { label: "Precipitation", detail: "No data", delta: 0 };
@@ -337,7 +379,7 @@ export function ratingFor(score: number): Rating {
 // --- the engine -------------------------------------------------------------
 
 export function biteForecast(input: ForecastInput): BiteForecast {
-  const { hours, at, celestial, species, waterTempF } = input;
+  const { hours, at, celestial, species, waterTempF, lake } = input;
   const profile = SPECIES[species];
 
   const factors: Factor[] = [
@@ -349,6 +391,11 @@ export function biteForecast(input: ForecastInput): BiteForecast {
     solunarFactor(at, celestial),
     precipFactor(hours, at),
   ];
+
+  // Only applies to deep lakes in autumn, so it is absent most of the time
+  // rather than sitting at zero and cluttering the breakdown.
+  const turnover = turnoverFactor(at, waterTempF, lake);
+  if (turnover) factors.push(turnover);
 
   const raw = factors.reduce((sum, f) => sum + f.delta, BASELINE);
   const score = Math.round(clamp(raw, 0, 100));

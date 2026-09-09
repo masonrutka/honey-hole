@@ -268,3 +268,64 @@ describe("scale calibration", () => {
     expect(great.score - ok.score).toBeGreaterThan(20);
   });
 });
+
+describe("fall turnover", () => {
+  const autumn = new Date("2026-10-12T09:00");
+  const octSeries = (): WeatherHour[] =>
+    Array.from({ length: 24 }, (_, i) => ({
+      time: `2026-10-12T${String(i).padStart(2, "0")}:00`,
+      tempF: 55, pressureHpa: 1015, windMph: 6, windDirDeg: 200,
+      cloudPct: 50, precipIn: 0,
+    }));
+
+  const args = {
+    hours: octSeries(),
+    at: autumn,
+    celestial: {
+      sunrise: new Date("2026-10-12T07:00"),
+      sunset: new Date("2026-10-12T18:20"),
+      moonTransit: null, moonUnderfoot: null, moonrise: null, moonset: null,
+      moonPhase: 0.3,
+    },
+    species: "walleye",
+    waterTempF: 52,
+  } as const;
+
+  it("penalises a deep lake sitting in the turnover window", () => {
+    const deep = biteForecast({ ...args, lake: { maxDepthFt: 60 } });
+    const factor = deep.factors.find((f) => f.label === "Turnover");
+    expect(factor).toBeDefined();
+    expect(factor!.delta).toBeLessThan(-10);
+  });
+
+  it("leaves shallow lakes alone — they never stratify", () => {
+    const shallow = biteForecast({ ...args, lake: { maxDepthFt: 12 } });
+    expect(shallow.factors.find((f) => f.label === "Turnover")).toBeUndefined();
+  });
+
+  it("scores a shallow lake above a deep one during turnover season", () => {
+    const shallow = biteForecast({ ...args, lake: { maxDepthFt: 12 } });
+    const deep = biteForecast({ ...args, lake: { maxDepthFt: 60 } });
+    expect(shallow.score).toBeGreaterThan(deep.score);
+  });
+
+  it("does not fire in summer, however deep the lake", () => {
+    const summer = biteForecast({
+      ...args, at: new Date("2026-07-12T09:00"), waterTempF: 52,
+      lake: { maxDepthFt: 60 },
+    });
+    expect(summer.factors.find((f) => f.label === "Turnover")).toBeUndefined();
+  });
+
+  it("does not fire once the lake has cooled past the mixing window", () => {
+    const late = biteForecast({ ...args, waterTempF: 41, lake: { maxDepthFt: 60 } });
+    expect(late.factors.find((f) => f.label === "Turnover")).toBeUndefined();
+  });
+
+  it("is absent entirely when depth is unknown", () => {
+    const unknown = biteForecast({ ...args, lake: { maxDepthFt: null } });
+    expect(unknown.factors.find((f) => f.label === "Turnover")).toBeUndefined();
+    const noLake = biteForecast({ ...args });
+    expect(noLake.factors.find((f) => f.label === "Turnover")).toBeUndefined();
+  });
+});

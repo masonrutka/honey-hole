@@ -16,9 +16,13 @@ export default function SpeciesIndex() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-3xl font-semibold tracking-tight">Species</h1>
-      <p className="mt-2 text-muted">
-        Wisconsin gamefish, and the lakes the DNR has recorded them in.
+      <p className="text-[11px] uppercase tracking-[0.2em] text-accent">
+        Wisconsin gamefish
+      </p>
+      <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">Species</h1>
+      <p className="mt-3 max-w-xl text-muted text-pretty">
+        Every species the DNR has recorded in a Wisconsin lake, and the water
+        that holds them.
       </p>
 
       {listed.length === 0 ? (
@@ -26,7 +30,11 @@ export default function SpeciesIndex() {
           Species data is still being imported.
         </p>
       ) : (
-        <ul className="mt-6 grid gap-2 sm:grid-cols-2 items-stretch">
+        <>
+          <h2 className="rule-tick mt-10 pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
+            Browse by species
+          </h2>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2 items-stretch">
           {listed.map((s) => (
             <li key={s.key} className="h-full">
               {/* h-full on the anchor: the <li> stretches to the row, but a
@@ -47,7 +55,8 @@ export default function SpeciesIndex() {
               </Link>
             </li>
           ))}
-        </ul>
+          </ul>
+        </>
       )}
     </div>
   );

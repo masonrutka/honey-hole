@@ -52,9 +52,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="mx-auto w-full max-w-5xl px-4 h-16 flex items-center gap-3">
             <Link href="/" className="flex items-baseline gap-2.5 group">
               {/*
-                A honey jar with a fish in it. The fish is knocked out of the
-                honey rather than drawn on top, which is the only way it stays
-                legible once the mark is this small.
+                A honey jar. A fish inside it read as a blob below about 24px,
+                and the mark is used at 24px and smaller almost everywhere, so
+                the jar carries it alone.
               */}
               <svg
                 viewBox="0 0 24 24"
@@ -73,10 +73,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   fill="currentColor"
                   opacity="0.55"
                 />
-                <g fill="var(--background)">
-                  <path d="M11 16.4c1.6-2.4 4.3-2.4 5.9 0-1.6 2.4-4.3 2.4-5.9 0Z" />
-                  <path d="M10.9 16.4 8.1 14.5v3.8Z" />
-                </g>
               </svg>
               <span className="display text-[1.35rem] font-semibold leading-none">
                 Honey Hole

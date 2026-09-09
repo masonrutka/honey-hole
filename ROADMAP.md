@@ -22,14 +22,29 @@ week is a loop over code that already exists. No new dependencies.
 
 Delivers two things: **best windows today** and **best day this week**.
 
-### 2. Recalibrate the bite score  ·  ~2 hours
-On a genuinely good evening the raw total overshoots 100 and gets clamped, so
-several lakes tie at exactly 100 and the ranking loses resolution right where
-it matters most. Needs weight tuning plus tests asserting that a near-perfect
-night lands around 85 rather than pegging the scale.
+### 2. Recalibrate the bite score  ·  DONE, validated 2026-09-09
+The first weighting let positive factors sum to +79 against a baseline of 50,
+so any decent evening pinned at 100 and a week read 100/99/100/93/99.
 
-Do this *after* the timeline, when scores across a full week are visible
-instead of a single evening.
+Weights were resized and then **validated against 549,270 hours of real
+historical Wisconsin weather** (`npx tsx scripts/calibrate.mts`), replaying a
+full year across 20 lakes and every species present in them:
+
+| Measure | Result |
+|---|---|
+| Hourly scores | p25 43 · p50 54 · p75 63 · p95 76 |
+| Clamped at 100 | 0.00% |
+| Rating mix | Prime 1.8% · Good 21% · Fair 50% · Slow 22% · Poor 5% |
+| Daily peak | p25 66 · p50 73 · p95 91 |
+| Spread within a 5-day week | median 18 points |
+| **After a sharp pressure rise** | **day peak falls 12.5 on average, 86% of the time** |
+
+That last row is the real validation: the post-frontal shutdown every angler
+knows about falls out of the weights rather than being hardcoded. Prime at 1.8%
+of hours is appropriately rare, and an 18-point spread across a typical week
+means the outlook can actually distinguish one day from another.
+
+Re-run the script after any weight change.
 
 ### 3. Favourites / recent lakes  ·  ~1 hour
 `localStorage`, no backend. In practice you check the same handful of lakes

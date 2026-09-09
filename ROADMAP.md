@@ -57,6 +57,24 @@ size, depth and species instead of a bare URL.
 
 ---
 
+## Lake data, round two  ·  DONE 2026-09-09
+
+Prompted by looking at what Lake-Link offers. Their forecaster factors in water
+clarity, which this app had no data for; chasing that turned up two better
+DNR datasets.
+
+- **Bottom composition and hydrologic lake type.** Rock and gravel hold
+  crayfish, muck grows weeds, sand is sparse cover. Lake type (seepage, spring,
+  drainage) stands in for clarity. Both now feed the bait engine.
+- **Stocking history.** 8,794 records across 1,057 lakes, 2015-present.
+  Joined by name matching at 88.6%; spot-checked exactly against the DNR's own
+  tool for Park Lake (54 rows, every species total identical).
+- **Lake outlines and depth maps.** Real shorelines as inline SVG, plus links
+  to the DNR bathymetric map (2,315 lakes) and interactive viewer.
+
+Still open from that comparison: per-lake fishing reports and discussions,
+which are the social layer and deliberately deferred.
+
 ## Horizon 2 — the catch log  ·  ~a week
 
 The original social vision, but **built as a private journal first, not a

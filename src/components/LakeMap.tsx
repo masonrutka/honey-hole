@@ -50,7 +50,7 @@ export default async function LakeMap({ lake }: { lake: Lake }) {
   if (!shape) {
     return (
       <section className="mt-8">
-        <h2 className="text-sm font-semibold">Maps</h2>
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">Maps</h2>
         {links}
       </section>
     );
@@ -71,7 +71,7 @@ export default async function LakeMap({ lake }: { lake: Lake }) {
 
   return (
     <section className="mt-8">
-      <h2 className="text-sm font-semibold">{lake.name}</h2>
+      <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">Shoreline</h2>
       <p className="mt-1 text-xs text-muted">
         Shoreline from DNR hydrography · north is up
       </p>
@@ -98,8 +98,8 @@ export default async function LakeMap({ lake }: { lake: Lake }) {
         >
           <defs>
             <linearGradient id={`water-${lake.wbic}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1e4a6b" />
-              <stop offset="100%" stopColor="#123047" />
+              <stop offset="0%" stopColor="var(--water)" />
+              <stop offset="100%" stopColor="var(--water-deep)" />
             </linearGradient>
           </defs>
           <path
@@ -107,7 +107,7 @@ export default async function LakeMap({ lake }: { lake: Lake }) {
             // evenodd cuts islands out of the water rather than filling them.
             fillRule="evenodd"
             fill={`url(#water-${lake.wbic})`}
-            stroke="#38bdf8"
+            stroke="var(--accent)"
             strokeWidth={Math.max(vw, vh) / 400}
             strokeLinejoin="round"
           />

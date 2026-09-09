@@ -111,7 +111,7 @@ export default async function ConditionsPanel({
 
   return (
     <>
-      <section className="rounded-xl border border-edge bg-surface/60 p-5">
+      <section className="contours contours-tight rounded-xl border border-edge bg-surface/70 p-5 sm:p-6">
         <BiteScore forecast={forecast} speciesName={profile.name} />
 
         {present.length > 1 && (
@@ -147,7 +147,7 @@ export default async function ConditionsPanel({
       />
 
       <section className="mt-6">
-        <h2 className="text-sm font-semibold">Right now on {lake.name}</h2>
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">Right now</h2>
         <dl className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
           <Stat label="Air" value={`${Math.round(current.tempF)}°F`} />
           <Stat label="Water (est.)" value={`${Math.round(waterTempF)}°F`} />
@@ -174,7 +174,7 @@ export default async function ConditionsPanel({
       </section>
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold">
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
           What to throw for {profile.name.toLowerCase()}
         </h2>
         {water && (
@@ -206,7 +206,7 @@ export default async function ConditionsPanel({
               className="rounded-lg border border-edge bg-surface p-4"
             >
               <div className="flex items-baseline gap-3">
-                <h3 className="font-medium">{b.presentation}</h3>
+                <h3 className="display text-lg">{b.presentation}</h3>
                 <span className="ml-auto text-[11px] uppercase tracking-wide text-muted">
                   {b.confidence >= 0.75
                     ? "Strong match"

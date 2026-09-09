@@ -52,16 +52,17 @@ export default async function LakePage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <nav className="text-xs text-muted">
-        <Link href="/" className="hover:text-foreground">
+      <div className="contours contours-tight -mx-4 px-4 pb-2">
+      <nav className="text-[11px] uppercase tracking-[0.16em] text-muted">
+        <Link href="/" className="hover:text-accent transition-colors">
           Lakes
         </Link>
-        <span className="mx-1.5">/</span>
+        <span className="mx-2 text-edge">/</span>
         <span>{lake.county ? `${lake.county} County` : "Wisconsin"}</span>
       </nav>
 
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{lake.name}</h1>
-      <p className="mt-1 text-sm text-muted">
+      <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">{lake.name}</h1>
+      <p className="mt-2 text-sm text-muted">
         {lake.acres.toLocaleString()} acres
         {lake.maxDepthFt ? ` · ${lake.maxDepthFt} ft max depth` : ""}
         {lake.counties.length > 1
@@ -72,7 +73,7 @@ export default async function LakePage({ params, searchParams }: Props) {
         {lake.boatLandings ? ` · ${lake.boatLandings} boat landings` : ""}
       </p>
 
-      <div className="mt-3">
+      <div className="mt-4">
         <LakeMemory
           lake={{
             wbic: lake.wbic,
@@ -83,7 +84,9 @@ export default async function LakePage({ params, searchParams }: Props) {
         />
       </div>
 
-      <div className="mt-6">
+      </div>
+
+      <div className="mt-8">
         <Suspense fallback={<ConditionsSkeleton />}>
           <ConditionsPanel lake={lake} selected={selected} />
         </Suspense>
@@ -93,8 +96,10 @@ export default async function LakePage({ params, searchParams }: Props) {
         <LakeMap lake={lake} />
       </Suspense>
 
-      <section className="mt-8">
-        <h2 className="text-sm font-semibold">Species present</h2>
+      <section className="mt-10">
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
+          Species present
+        </h2>
         {present.length === 0 ? (
           <p className="mt-2 text-sm text-muted">
             The DNR does not publish a species list for this water.{" "}
@@ -118,7 +123,7 @@ export default async function LakePage({ params, searchParams }: Props) {
                              hover:border-accent/60 hover:bg-surface-2 transition-colors"
                 >
                   <div className="flex items-baseline gap-2">
-                    <span className="font-medium">{s.profile.name}</span>
+                    <span className="display text-lg">{s.profile.name}</span>
                     {s.abundance && (
                       <span className="text-[11px] uppercase tracking-wide text-accent">
                         {s.abundance}
@@ -136,8 +141,10 @@ export default async function LakePage({ params, searchParams }: Props) {
       <StockingHistory wbic={lake.wbic} lakeName={lake.name} />
 
       {regulations.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-sm font-semibold">Regulations</h2>
+        <section className="mt-10">
+          <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
+            Regulations
+          </h2>
           <p className="mt-1 text-xs text-muted">
             From the WDNR lake regulations layer. Always confirm against the
             current pamphlet before keeping fish.

@@ -58,7 +58,7 @@ export default function OutlookStrip({
 
   return (
     <section className="mt-6">
-      <h2 className="text-sm font-semibold">
+      <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
         When to go for {speciesName.toLowerCase()}
       </h2>
       <p className="mt-1 text-xs text-muted">

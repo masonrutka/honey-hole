@@ -17,12 +17,12 @@ export default async function Image() {
           flexDirection: "column",
           justifyContent: "center",
           padding: "80px",
-          background: "linear-gradient(135deg, #16273a 0%, #0a1018 55%)",
-          color: "#e8eef5",
+          background: "linear-gradient(140deg, #16302f 0%, #0b100d 58%)",
+          color: "#ecefe8",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16, color: "#38bdf8" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, color: "#d9a441" }}>
           <div style={{ display: "flex", fontSize: 30, letterSpacing: 2, textTransform: "uppercase" }}>
             Honey Hole · Wisconsin
           </div>
@@ -42,14 +42,14 @@ export default async function Image() {
           style={{
             display: "flex",
             fontSize: 34,
-            color: "#93a4b8",
+            color: "#98a599",
             marginTop: 28,
             maxWidth: 900,
           }}
         >
           {`Species, regulations, live conditions and bait suggestions for ${totalLakes().toLocaleString()} Wisconsin lakes.`}
         </div>
-        <div style={{ display: "flex", gap: 40, marginTop: 48, fontSize: 26, color: "#93a4b8" }}>
+        <div style={{ display: "flex", gap: 40, marginTop: 48, fontSize: 26, color: "#98a599" }}>
           <div style={{ display: "flex" }}>Built on open Wisconsin DNR data</div>
         </div>
       </div>

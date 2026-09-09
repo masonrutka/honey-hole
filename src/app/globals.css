@@ -88,22 +88,24 @@ body {
   z-index: -1;
   pointer-events: none;
   /* Two offset ring systems read as a basin rather than a bullseye. */
+  /* Sized in rem, not percentages: percentage radii are relative to the
+     element box, so the rings stretched into ovals as the window resized. */
   background-image:
     repeating-radial-gradient(
-      ellipse 62% 78% at 74% 18%,
+      ellipse 38rem 30rem at 74% 18%,
       color-mix(in oklab, var(--water) 95%, transparent) 0 1.25px,
       transparent 1.25px 30px
     ),
     repeating-radial-gradient(
-      ellipse 48% 60% at 88% 62%,
+      ellipse 26rem 21rem at 88% 62%,
       color-mix(in oklab, var(--water) 70%, transparent) 0 1px,
       transparent 1px 24px
     );
   -webkit-mask-image: radial-gradient(
-    ellipse 90% 100% at 78% 24%, #000 0%, transparent 72%
+    ellipse 46rem 34rem at 78% 24%, #000 0%, transparent 72%
   );
   mask-image: radial-gradient(
-    ellipse 90% 100% at 78% 24%, #000 0%, transparent 72%
+    ellipse 46rem 34rem at 78% 24%, #000 0%, transparent 72%
   );
   opacity: 0.55;
 }
@@ -111,7 +113,7 @@ body {
 /* Contours behind a section head, at a size that suits a narrower column. */
 .contours-tight::before {
   background-image: repeating-radial-gradient(
-    ellipse 55% 120% at 92% 40%,
+    ellipse 30rem 26rem at 92% 40%,
     color-mix(in oklab, var(--water) 85%, transparent) 0 1px,
     transparent 1px 18px
   );
@@ -145,4 +147,70 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 3px;
+}
+
+/*
+  Motion.
+
+  What separates a page that looks fine from one that feels considered is
+  almost always motion, and motion costs nothing. The rules here are: it must
+  be fast (under 700ms), it must move in the direction the data does, and it
+  must never delay reading. Anything decorative enough to notice twice is too
+  much.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  /* The bite ring draws itself, so the score reads as measured rather than
+     simply printed. */
+  .dial-draw {
+    animation: dial-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes dial-draw {
+    from {
+      stroke-dashoffset: var(--dial-len, 264);
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Outlook bars grow up out of the baseline, in the order of the day. */
+  .bar-rise {
+    animation: bar-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--bar-i, 0) * 18ms);
+    transform-origin: bottom;
+  }
+  @keyframes bar-rise {
+    from {
+      transform: scaleY(0.06);
+      opacity: 0;
+    }
+    to {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  /* A short settle on the page's leading block. Content is readable the whole
+     time -- this starts at 88% opacity, not zero. */
+  .settle {
+    animation: settle 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes settle {
+    from {
+      opacity: 0.88;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Links and controls get a real transition rather than an instant swap. */
+a,
+button {
+  transition-property: color, background-color, border-color, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
 }

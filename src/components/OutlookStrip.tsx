@@ -86,15 +86,16 @@ export default function OutlookStrip({
                 className="flex flex-1 items-end gap-px h-7"
                 aria-hidden="true"
               >
-                {day.hours.map((h) => (
+                {day.hours.map((h, hi) => (
                   <span
                     key={h.time.toISOString()}
-                    className="flex-1 rounded-sm"
+                    className="bar-rise flex-1 rounded-sm"
                     style={{
                       height: `${Math.max(8, h.score)}%`,
                       background: barColor(h.score),
                       opacity: ratingFor(h.score) === "Fair" ? 0.4
                         : h.score >= 64 ? 0.95 : 0.4,
+                      ["--bar-i" as string]: hi,
                     }}
                   />
                 ))}

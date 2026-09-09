@@ -114,12 +114,12 @@ export default async function LakePage({ params, searchParams }: Props) {
             .
           </p>
         ) : (
-          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2 items-stretch">
             {present.map((s) => (
-              <li key={s.key}>
+              <li key={s.key} className="h-full">
                 <Link
                   href={`/species/${s.key}`}
-                  className="block rounded-lg border border-edge bg-surface px-4 py-3
+                  className="flex h-full flex-col rounded-lg border border-edge bg-surface px-4 py-3
                              hover:border-accent/60 hover:bg-surface-2 transition-colors"
                 >
                   <div className="flex items-baseline gap-2">

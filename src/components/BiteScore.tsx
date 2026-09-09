@@ -33,9 +33,13 @@ export default function BiteScore({
             stroke="var(--border)" strokeWidth="8"
           />
           <circle
+            className="dial-draw"
             cx="50" cy="50" r="42" fill="none"
             stroke={color} strokeWidth="8" strokeLinecap="round"
             strokeDasharray={`${filled} ${circumference}`}
+            // The keyframe animates from this offset to zero, so the arc
+            // sweeps out to its final length rather than appearing whole.
+            style={{ ["--dial-len" as string]: filled }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">

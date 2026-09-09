@@ -111,7 +111,7 @@ export default async function ConditionsPanel({
 
   return (
     <>
-      <section className="contours contours-tight rounded-xl border border-edge bg-surface/70 p-5 sm:p-6">
+      <section className="settle contours contours-tight rounded-xl border border-edge bg-surface/70 p-5 sm:p-6">
         <BiteScore forecast={forecast} speciesName={profile.name} />
 
         {present.length > 1 && (

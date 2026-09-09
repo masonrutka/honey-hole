@@ -26,16 +26,19 @@ export default function SpeciesIndex() {
           Species data is still being imported.
         </p>
       ) : (
-        <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-6 grid gap-2 sm:grid-cols-2 items-stretch">
           {listed.map((s) => (
-            <li key={s.key}>
+            <li key={s.key} className="h-full">
+              {/* h-full on the anchor: the <li> stretches to the row, but a
+                  block anchor is content-height, so a short blurb left a short
+                  card sitting in a tall row. */}
               <Link
                 href={`/species/${s.key}`}
-                className="block rounded-lg border border-edge bg-surface p-4
+                className="flex h-full flex-col rounded-lg border border-edge bg-surface p-4
                            hover:border-accent/60 hover:bg-surface-2 transition-colors"
               >
                 <div className="flex items-baseline gap-2">
-                  <span className="font-medium">{s.name}</span>
+                  <span className="display text-lg">{s.name}</span>
                   <span className="ml-auto text-xs text-muted">
                     {(counts[s.key] ?? 0).toLocaleString()} lakes
                   </span>

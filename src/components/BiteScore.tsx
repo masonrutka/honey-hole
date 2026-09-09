@@ -33,6 +33,13 @@ export default function BiteScore({
             stroke="var(--border)" strokeWidth="8"
           />
           <circle
+            /*
+              Keyed on the species and score so React replaces the node rather
+              than updating it. A CSS animation only runs on mount, so without
+              this the ring drew itself once and then sat still every time you
+              switched species.
+            */
+            key={`${speciesName}-${forecast.score}`}
             className="dial-draw"
             cx="50" cy="50" r="42" fill="none"
             stroke={color} strokeWidth="8" strokeLinecap="round"

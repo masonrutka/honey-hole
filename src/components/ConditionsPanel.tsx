@@ -11,6 +11,11 @@ import BiteScore from "./BiteScore";
 import FactorList from "./FactorList";
 import OutlookStrip from "./OutlookStrip";
 
+/** "waning crescent" -> "Waning crescent". */
+function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-edge bg-surface px-3 py-2">
@@ -157,8 +162,8 @@ export default async function ConditionsPanel({
           />
           <Stat label="Pressure" value={`${Math.round(current.pressureHpa)} mb`} />
           <Stat label="Sky" value={`${Math.round(current.cloudPct)}% cloud`} />
-          <Stat label="Season" value={season.replace("_", " ")} />
-          <Stat label="Moon" value={moonPhaseName(celestial.moonPhase)} />
+          <Stat label="Season" value={sentenceCase(season.replace("_", " "))} />
+          <Stat label="Moon" value={sentenceCase(moonPhaseName(celestial.moonPhase))} />
           <Stat
             label="Sunrise / set"
             value={`${clock(weather.sunrise[weather.todayIndex])} / ${clock(

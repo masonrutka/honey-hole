@@ -5,6 +5,7 @@ import type { WeatherBundle } from "../weather";
 const hour = (h: number, score: number): HourScore => ({
   time: new Date(Date.UTC(2026, 5, 15, h)),
   score,
+  elapsed: false,
 });
 
 describe("bestWindow", () => {
@@ -135,22 +136,34 @@ describe("buildOutlook", () => {
 });
 
 describe("elapsed hours", () => {
-  it("drops hours that have already passed today", () => {
+  it("flags hours that have already passed, but still draws them", () => {
     const b = bundle();
     // 14:00 UTC on the fixture's "today" (offset 0).
     const now = new Date(Date.UTC(2026, 5, 15, 14));
     const out = buildOutlook(b, { acres: 500, maxDepthFt: 30 }, "walleye", 43, -89, 2, now);
     const today = out[0];
-    for (const h of today.hours) {
-      expect(h.time.getTime() + 3_600_000).toBeGreaterThan(now.getTime());
+
+    // Every day spans the same hours, so the shared time axis lines up.
+    expect(today.hours.length).toBe(out[1].hours.length);
+    const past = today.hours.filter((h) => h.elapsed);
+    expect(past.length).toBeGreaterThan(0);
+    for (const h of past) {
+      expect(h.time.getTime() + 3_600_000).toBeLessThanOrEqual(now.getTime());
     }
   });
 
-  it("keeps the whole day when no clock is supplied", () => {
+  it("never recommends a window that has already ended", () => {
     const b = bundle();
-    const withNow = buildOutlook(b, { acres: 500 }, "walleye", 43, -89, 1,
-      new Date(Date.UTC(2026, 5, 15, 18)));
-    const without = buildOutlook(b, { acres: 500 }, "walleye", 43, -89, 1, null);
-    expect(without[0].hours.length).toBeGreaterThan(withNow[0].hours.length);
+    const now = new Date(Date.UTC(2026, 5, 15, 14));
+    const out = buildOutlook(b, { acres: 500, maxDepthFt: 30 }, "walleye", 43, -89, 1, now);
+    if (out[0].best) {
+      expect(out[0].best.end.getTime()).toBeGreaterThan(now.getTime());
+    }
+  });
+
+  it("marks nothing elapsed when no clock is supplied", () => {
+    const b = bundle();
+    const out = buildOutlook(b, { acres: 500 }, "walleye", 43, -89, 1, null);
+    expect(out[0].hours.every((h) => !h.elapsed)).toBe(true);
   });
 });

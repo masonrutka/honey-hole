@@ -51,16 +51,31 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <header className="border-b border-edge bg-background/85 backdrop-blur sticky top-0 z-20">
           <div className="mx-auto w-full max-w-5xl px-4 h-16 flex items-center gap-3">
             <Link href="/" className="flex items-baseline gap-2.5 group">
-              {/* Concentric depth rings: the app's own subject as its mark. */}
+              {/*
+                A honey jar with a fish in it. The fish is knocked out of the
+                honey rather than drawn on top, which is the only way it stays
+                legible once the mark is this small.
+              */}
               <svg
                 viewBox="0 0 24 24"
-                className="h-5 w-5 self-center text-accent shrink-0"
+                className="h-6 w-6 self-center text-accent shrink-0"
                 aria-hidden="true"
               >
-                <g fill="none" stroke="currentColor" strokeWidth="1.4">
-                  <ellipse cx="12" cy="12" rx="9.5" ry="7" opacity=".35" />
-                  <ellipse cx="12" cy="12" rx="6" ry="4.4" opacity=".65" />
-                  <ellipse cx="12" cy="12" rx="2.6" ry="1.9" />
+                <rect x="6.6" y="1.9" width="10.8" height="2.8" rx="1.2" fill="currentColor" />
+                <path
+                  d="M8 4.7h8a3.2 3.2 0 0 1 3.2 3.2v10a3.2 3.2 0 0 1-3.2 3.2H8a3.2 3.2 0 0 1-3.2-3.2v-10A3.2 3.2 0 0 1 8 4.7Z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                />
+                <path
+                  d="M4.8 10.4c1.8 0 1.8 1.2 3.6 1.2s1.8-1.2 3.6-1.2 1.8 1.2 3.6 1.2 1.8-1.2 3.6-1.2v7.5a3.2 3.2 0 0 1-3.2 3.2H8a3.2 3.2 0 0 1-3.2-3.2Z"
+                  fill="currentColor"
+                  opacity="0.55"
+                />
+                <g fill="var(--background)">
+                  <path d="M11 16.4c1.6-2.4 4.3-2.4 5.9 0-1.6 2.4-4.3 2.4-5.9 0Z" />
+                  <path d="M10.9 16.4 8.1 14.5v3.8Z" />
                 </g>
               </svg>
               <span className="display text-[1.35rem] font-semibold leading-none">

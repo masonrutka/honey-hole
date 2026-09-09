@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { fetchWeather, estimateWaterTempF, celestialFor } from "@/lib/weather";
 import { biteForecast, compass, moonPhaseName } from "@/lib/forecast";
-import { suggestBaits, seasonFor, skyFor, windBandFor } from "@/lib/bait";
+import { suggestBaits, seasonFor, skyFor, windBandFor, readWater } from "@/lib/bait";
 import { SPECIES, type SpeciesKey } from "@/lib/species";
 import type { Lake } from "@/lib/lakes";
 import { lakeSpeciesProfiles } from "@/lib/lakes";
@@ -82,7 +82,12 @@ export default async function ConditionsPanel({
     month: now.getMonth() + 1,
     sky: skyFor(current.cloudPct),
     wind: windBandFor(current.windMph),
+    bottom: lake.bottom,
+    lakeType: lake.lakeType,
   });
+
+  // What the lake bed and hydrology mean for where fish sit and what colour to throw.
+  const water = readWater(lake.bottom, lake.lakeType);
 
   const season = seasonFor(now.getMonth() + 1, waterTempF);
 
@@ -171,6 +176,28 @@ export default async function ConditionsPanel({
         <h2 className="text-sm font-semibold">
           What to throw for {profile.name.toLowerCase()}
         </h2>
+        {water && (
+          <div className="mt-2 rounded-lg border border-edge bg-surface-2/60 p-4">
+            <p className="text-[11px] uppercase tracking-wide text-muted">
+              Reading the water
+            </p>
+            {water.bottomNote && (
+              <p className="mt-1.5 text-sm text-pretty">{water.bottomNote}</p>
+            )}
+            <p className="mt-1.5 text-sm text-muted text-pretty">{water.colorNote}</p>
+            {lake.bottom && (
+              <p className="mt-2 text-xs text-muted">
+                Bottom:{" "}
+                {(["muck", "sand", "gravel", "rock"] as const)
+                  .filter((k) => lake.bottom![k] > 0)
+                  .map((k) => `${lake.bottom![k]}% ${k}`)
+                  .join(" · ")}
+                {lake.lakeType ? ` · ${lake.lakeType.toLowerCase()} lake` : ""}
+              </p>
+            )}
+          </div>
+        )}
+
         <ul className="mt-2 space-y-2">
           {baits.map((b, i) => (
             <li

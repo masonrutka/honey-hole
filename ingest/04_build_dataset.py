@@ -84,6 +84,7 @@ def main() -> int:
         return 1
     details = {d["wbic"]: d for d in load("lake_details.json", [])}
     regs = {r["wbic"]: r for r in load("regulations.json", [])}
+    facts = {f["wbic"]: f for f in load("lake_facts.json", [])}
 
     # --- intern regulation text ------------------------------------------
     groups: list[str] = []
@@ -125,6 +126,7 @@ def main() -> int:
             with_species += 1
 
         name, alt_names = pick_name(lake["name"], d.get("official_name"))
+        fact = facts.get(wbic, {})
 
         out_lakes.append({
             "wbic": wbic,
@@ -138,6 +140,8 @@ def main() -> int:
             "lon": lake["lon"],
             "kind": lake["hydrotype"],
             "boatLandings": d.get("boat_landings"),
+            "bottom": fact.get("bottom"),
+            "lakeType": fact.get("lake_type"),
             "contourMapUrl": d.get("contour_map_url"),
             "dnrMapUrl": d.get("dnr_map_url"),
             "species": species,
@@ -158,6 +162,8 @@ def main() -> int:
           f"-> src/data/regulations.json ({regs_mb:.2f} MB)")
     print(f"{with_species:,} lakes have species data "
           f"({len(details):,} detail pages scraped so far)")
+    print(f"{sum(1 for l in out_lakes if l['bottom']):,} lakes have bottom composition, "
+          f"{sum(1 for l in out_lakes if l['lakeType']):,} have a lake type")
 
     if unmatched:
         print("\nUnmapped DNR species names (add to SPECIES_ALIASES if worth it):")

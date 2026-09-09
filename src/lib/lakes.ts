@@ -11,6 +11,7 @@
 import lakesData from "@/data/lakes.json";
 import regsData from "@/data/regulations.json";
 import { SPECIES, type SpeciesKey } from "./species";
+import type { Bottom, LakeType } from "./bait";
 
 export interface LakeSpecies {
   key: SpeciesKey;
@@ -30,6 +31,10 @@ export interface Lake {
   lon: number;
   kind: string;
   boatLandings: number | null;
+  /** Percentage bottom composition, where the DNR has surveyed it. */
+  bottom: Bottom | null;
+  /** DNR hydrologic classification; a proxy for fertility and stain. */
+  lakeType: LakeType;
   /** DNR bathymetric map PDF, where one has been published (~46% of lakes). */
   contourMapUrl: string | null;
   /** Deep link into the DNR Surface Water Data Viewer for this lake. */

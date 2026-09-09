@@ -28,12 +28,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import wdnr  # noqa: E402
+from names import normalize, pick_name  # noqa: E402
 
 HERE = Path(__file__).parent
 CACHE = HERE / "cache" / "stocking"
-# The merged dataset, not the raw hydrography pull: matching needs county and
-# alternate names, which only exist after 04_build_dataset.py has run.
-LAKES_IN = HERE.parent / "src" / "data" / "lakes.json"
+# Read the raw pulls rather than the merged dataset. 04_build_dataset.py
+# consumes this script's output, so depending on its output in turn would make
+# the pipeline circular and require running 04 twice.
+LAKES_IN = HERE / "data" / "lakes.json"
+DETAILS_IN = HERE / "data" / "lake_details.json"
 OUT = HERE / "data" / "stocking.json"
 
 ENDPOINT = "https://apps.dnr.wi.gov/fisheriesmanagement/Public/Summary/LoadResults"
@@ -45,9 +48,6 @@ STREAM_SUFFIXES = {
     "BR", "CR", "CK", "RIV", "R", "BRANCH", "CREEK", "RIVER", "SPRING",
     "SPR", "FORK", "DITCH", "SLOUGH", "TRIB",
 }
-
-RE_PUNCT = re.compile(r"[^A-Z0-9 ]")
-RE_SPACE = re.compile(r"\s+")
 
 # Records that cannot match a named inland lake, by design rather than by bug.
 GREAT_LAKES = {"LAKE MICHIGAN", "LAKE SUPERIOR", "MICHIGAN LAKE", "SUPERIOR LAKE"}
@@ -68,16 +68,6 @@ def classify_unmatchable(name: str) -> str | None:
     if any(w in n.split() for w in ("RIVER", "CREEK", "BROOK", "CHANNEL", "SLOUGH")):
         return "stream or river"
     return None
-
-
-def normalize(name: str) -> str:
-    """Fold a waterbody name to a comparable key."""
-    n = RE_PUNCT.sub(" ", (name or "").upper())
-    n = RE_SPACE.sub(" ", n).strip()
-    # "LAKE WINNEBAGO" and "WINNEBAGO LAKE" are the same water.
-    if n.startswith("LAKE "):
-        n = n[5:] + " LAKE"
-    return n
 
 
 def looks_like_stream(name: str) -> bool:
@@ -139,9 +129,25 @@ def main() -> int:
     args = ap.parse_args()
 
     if not LAKES_IN.exists():
-        print("run 04_build_dataset.py first")
+        print("run 01_lakes.py first")
         return 1
-    lakes = json.loads(LAKES_IN.read_text())
+    raw = json.loads(LAKES_IN.read_text())
+    details = {}
+    if DETAILS_IN.exists():
+        details = {d["wbic"]: d for d in json.loads(DETAILS_IN.read_text())}
+    else:
+        print("  ! lake_details.json missing; matching without counties will be poor")
+
+    # Rebuild the same display name and aliases 04 will use, from the same
+    # shared helper, so both agree on what a lake is called.
+    lakes = []
+    for l in raw:
+        d = details.get(l["wbic"], {})
+        name, alts = pick_name(l["name"], d.get("official_name"))
+        lakes.append({
+            "wbic": l["wbic"], "name": name, "altNames": alts,
+            "county": d.get("county"), "acres": l["acres"],
+        })
 
     # Index lakes by (normalised name, county). Where a county has two lakes of
     # the same name, prefer the larger -- it is the one anglers mean.

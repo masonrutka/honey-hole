@@ -122,8 +122,15 @@ async function main() {
       if (!sunrise[d] || !sunset[d]) continue;
       const waterTempF = estimateWaterTempF(means, lake, d);
       const celestial = celestialFor(sunrise[d], lake.lat, lake.lon, sunrise[d], sunset[d]);
-      const dayStart = new Date(sunrise[d]); dayStart.setUTCMinutes(0, 0, 0);
-      const base = dayStart.getTime() - (dayStart.getUTCHours() - 0) * 3_600_000;
+      // Local midnight, not UTC midnight. Without applying the offset this
+      // scored 00:00-16:00 local instead of 05:00-21:00 -- dropping the entire
+      // evening bite window and adding five night hours, which skewed every
+      // number derived from this harness. src/lib/timeline.ts does the same
+      // computation and is the reference.
+      const base =
+        Math.floor((sunrise[d].getTime() + offset * 1000) / 86_400_000) *
+          86_400_000 -
+        offset * 1000;
 
       // A day plus the preceding 12h is all the engine needs (pressure trend
       // looks back 6h). Slicing keeps each scoring call cheap.

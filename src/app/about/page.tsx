@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { totalLakes } from "@/lib/lakes";
+import { totalLakes, coverage } from "@/lib/lakes";
 
 export const metadata: Metadata = {
   title: "About",
@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   const count = totalLakes();
+  const have = coverage();
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 space-y-6">
       <h1 className="text-3xl font-semibold tracking-tight">About Honey Hole</h1>
@@ -28,8 +29,9 @@ export default function AboutPage() {
           </li>
           <li>
             <span className="text-foreground">Species and lake facts.</span> The DNR
-            lake pages, which publish surveyed species with an abundance rating,
-            plus acreage, maximum depth and boat landings.
+            lake pages, which publish surveyed species with an abundance rating
+            for {have.species.toLocaleString()} lakes, plus acreage, maximum
+            depth and boat landings.
           </li>
           <li>
             <span className="text-foreground">Regulations.</span> The WDNR lake
@@ -37,18 +39,20 @@ export default function AboutPage() {
             per lake.
           </li>
           <li>
-            <span className="text-foreground">Bottom and hydrology.</span> The DNR
-            publishes bottom composition (sand, gravel, rock, muck) and a
-            hydrologic lake type for most lakes. Bottom drives where fish hold;
-            lake type stands in for clarity, since seepage and spring lakes run
+            <span className="text-foreground">Bottom and hydrology.</span> Bottom
+            composition (sand, gravel, rock, muck) for{" "}
+            {have.bottom.toLocaleString()} lakes and a hydrologic lake type for{" "}
+            {have.lakeType.toLocaleString()}. Bottom drives where fish hold; lake
+            type stands in for clarity, since seepage and spring lakes run
             clearer than stream-fed drainage lakes.
           </li>
           <li>
             <span className="text-foreground">Stocking.</span> DNR hatchery
-            records, 2015 to present. These are keyed by waterbody name rather
-            than by id, so they are joined by name matching that places about
-            89% of records; the rest are millponds, quarries and lake chains
-            outside this dataset. Tribal and private stocking is not included.
+            records from 2015, covering {have.stocking.toLocaleString()} lakes.
+            These are keyed by waterbody name rather than by id, so they are
+            joined by name matching that places 88.6% of records; the rest are
+            millponds, quarries and lake chains outside this dataset. Tribal and
+            private stocking is not included.
           </li>
           <li>
             <span className="text-foreground">Weather.</span> Open-Meteo, for hourly

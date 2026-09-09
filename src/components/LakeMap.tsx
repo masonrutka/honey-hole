@@ -59,10 +59,15 @@ export default async function LakeMap({ lake }: { lake: Lake }) {
   const [, , vw, vh] = shape.viewBox.split(" ").map(Number);
   // A round number of miles that fits comfortably under the shape.
   const target = shape.widthMiles / 3;
-  const nice = [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50].reduce((a, b) =>
-    Math.abs(b - target) < Math.abs(a - target) ? b : a,
-  );
-  const barFraction = Math.min(0.85, nice / shape.widthMiles);
+  // Pick the largest round distance that still fits inside 85% of the drawn
+  // width. Clamping the bar without changing the label made it lie about scale
+  // on very small lakes.
+  const CHOICES = [0.02, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50];
+  const fits = CHOICES.filter((c) => c / shape.widthMiles <= 0.85);
+  const nice = fits.length
+    ? fits.reduce((a, b) => (Math.abs(b - target) < Math.abs(a - target) ? b : a))
+    : CHOICES[0];
+  const barFraction = nice / shape.widthMiles;
 
   return (
     <section className="mt-8">

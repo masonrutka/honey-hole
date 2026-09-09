@@ -1,4 +1,5 @@
 import type { DayOutlook } from "@/lib/timeline";
+import { ratingFor } from "@/lib/forecast";
 
 const RATING_COLOR: Record<string, string> = {
   Prime: "var(--prime)",
@@ -8,13 +9,13 @@ const RATING_COLOR: Record<string, string> = {
   Poor: "var(--poor)",
 };
 
-/** Colour an individual hour bar by its own score, not the day's rating. */
+/**
+ * Colour an hour bar by its own score. Derived from ratingFor rather than
+ * repeating the thresholds, which is how these drifted out of step with the
+ * recalibrated scale in the first place.
+ */
 function barColor(score: number): string {
-  if (score >= 78) return "var(--prime)";
-  if (score >= 62) return "var(--good)";
-  if (score >= 45) return "var(--fair)";
-  if (score >= 30) return "var(--slow)";
-  return "var(--poor)";
+  return RATING_COLOR[ratingFor(score)];
 }
 
 /**
@@ -92,7 +93,8 @@ export default function OutlookStrip({
                     style={{
                       height: `${Math.max(8, h.score)}%`,
                       background: barColor(h.score),
-                      opacity: h.score >= 62 ? 0.95 : 0.4,
+                      opacity: ratingFor(h.score) === "Fair" ? 0.4
+                        : h.score >= 64 ? 0.95 : 0.4,
                     }}
                   />
                 ))}

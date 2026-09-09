@@ -329,3 +329,42 @@ describe("fall turnover", () => {
     expect(noLake.factors.find((f) => f.label === "Turnover")).toBeUndefined();
   });
 });
+
+describe("hourly sampling", () => {
+  const wide = (): WeatherHour[] =>
+    Array.from({ length: 240 }, (_, i) => ({
+      time: new Date(Date.UTC(2026, 5, 10) + i * 3_600_000).toISOString(),
+      tempF: 60 + i * 0.01,
+      pressureHpa: 1000 + i * 0.05,
+      windMph: 5, windDirDeg: 180, cloudPct: 50, precipIn: 0,
+    }));
+
+  const cel = {
+    sunrise: new Date(Date.UTC(2026, 5, 15, 10)),
+    sunset: new Date(Date.UTC(2026, 5, 16, 1)),
+    moonTransit: null, moonUnderfoot: null, moonrise: null, moonset: null,
+    moonPhase: 0.3,
+  };
+
+  it("picks the nearest sample at both ends of the series", () => {
+    const hours = wide();
+    // Before the series starts, and after it ends: must not throw or return null.
+    for (const at of [
+      new Date(Date.UTC(2026, 5, 9)),
+      new Date(Date.UTC(2026, 6, 1)),
+      new Date(Date.UTC(2026, 5, 15, 12)),
+    ]) {
+      const f = biteForecast({ hours, at, celestial: cel, species: "walleye", waterTempF: 68 });
+      expect(Number.isFinite(f.score)).toBe(true);
+      expect(f.factors.find((x) => x.label === "Wind")!.detail).not.toMatch(/No wind data/);
+    }
+  });
+
+  it("resolves an exact timestamp to that very hour", () => {
+    const hours = wide();
+    const at = new Date(hours[100].time);
+    const f = biteForecast({ hours, at, celestial: cel, species: "walleye", waterTempF: 68 });
+    // Pressure at index 100 is 1005.0; the 6h-earlier sample is 1004.7.
+    expect(f.factors.find((x) => x.label === "Pressure")!.detail).toMatch(/0\.3 mb/);
+  });
+});

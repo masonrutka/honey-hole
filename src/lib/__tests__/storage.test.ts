@@ -77,8 +77,26 @@ describe("hostile storage", () => {
   });
 
   it("drops entries that are not lakes", () => {
-    s._map.set(KEYS.FAVORITES_KEY, '[{"wbic":1,"name":"A"},{"nope":true},null]');
+    s._map.set(
+      KEYS.FAVORITES_KEY,
+      '[{"wbic":1,"name":"A","acres":10,"county":"X"},{"nope":true},null]',
+    );
     expect(getFavorites(s).map((l) => l.wbic)).toEqual([1]);
+  });
+
+  it("rejects entries missing a field the UI renders", () => {
+    // An older or hand-edited entry without `acres` used to pass validation
+    // and then crash the home page on acres.toLocaleString().
+    s._map.set(KEYS.FAVORITES_KEY, '[{"wbic":1,"name":"A"}]');
+    expect(getFavorites(s)).toEqual([]);
+
+    s._map.set(KEYS.RECENT_KEY, '[{"wbic":2,"name":"B","acres":"lots"}]');
+    expect(getRecent(s)).toEqual([]);
+  });
+
+  it("accepts a null county, which is legitimate", () => {
+    s._map.set(KEYS.FAVORITES_KEY, '[{"wbic":3,"name":"C","acres":5,"county":null}]');
+    expect(getFavorites(s).map((l) => l.wbic)).toEqual([3]);
   });
 
   it("does not throw when writing fails", () => {

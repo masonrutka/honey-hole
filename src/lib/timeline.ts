@@ -9,7 +9,7 @@
  * is a pure function of a timestamp, so this is a loop over existing code.
  */
 
-import { biteForecast, ratingFor, type Rating } from "./forecast";
+import { biteForecast, ratingFor, RATING_FLOOR, type Rating } from "./forecast";
 import { estimateWaterTempF, celestialFor, type WeatherBundle } from "./weather";
 import type { SpeciesKey } from "./species";
 
@@ -44,8 +44,12 @@ export interface DayOutlook {
 const START_HOUR = 4;
 const END_HOUR = 22;
 
-/** An hour must clear this to be worth calling a window at all. */
-const WINDOW_FLOOR = 55;
+/**
+ * An hour must clear this to be worth calling a window at all. Tied to the
+ * Good band so the text and the colour cannot disagree -- a flat day at 60 was
+ * previously labelled "good most of the day" beside a Fair-coloured score.
+ */
+const WINDOW_FLOOR = RATING_FLOOR.Good;
 /**
  * How far below the day's own peak an hour may sit and still count. Without
  * this, a uniformly good day reports its "best window" as 4am-11pm, which
@@ -63,6 +67,8 @@ export function buildOutlook(
   lat: number,
   lon: number,
   days = 5,
+  /** Hours already past are dropped from today; pass null to keep the full day. */
+  now: Date | null = new Date(),
 ): DayOutlook[] {
   const out: DayOutlook[] = [];
   const maxDays = Math.min(days, weather.sunrise.length - weather.todayIndex);
@@ -92,6 +98,9 @@ export function buildOutlook(
     const hours: HourScore[] = [];
     for (let h = START_HOUR; h <= END_HOUR; h++) {
       const at = new Date(dayStartUtc + h * 3_600_000);
+      // Today should not advertise a window that has already ended, nor let an
+      // elapsed peak win "best day this week".
+      if (now && at.getTime() + 3_600_000 <= now.getTime()) continue;
       // Skip hours the weather series does not cover.
       if (
         at.getTime() < new Date(weather.hours[0].time).getTime() ||

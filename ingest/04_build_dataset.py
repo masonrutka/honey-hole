@@ -17,6 +17,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+from names import pick_name  # noqa: E402
+
 HERE = Path(__file__).parent
 DATA = HERE / "data"
 OUT = HERE.parent / "src" / "data"
@@ -45,28 +48,6 @@ def match_species(name: str) -> str | None:
         if any(a in n for a in aliases):
             return key
     return None
-
-
-# DNR lake pages sometimes carry an internal abbreviated code as the title
-# ("Wisconsin R Fl C3-Stevens Pt") rather than a readable name. Those are worse
-# than the hydrography layer's name, so detect and reject them.
-RE_DNR_CODE = re.compile(r"\b(R|Fl|Cr|Ck|Riv|Res|Pt|Br)\b|\d", re.I)
-
-
-def pick_name(hydro_name: str, official: str | None) -> tuple[str, list[str]]:
-    """Return (display name, alternate names to also match when searching).
-
-    The official DNR name is usually better ("Big Muskego Lake" beats "Muskego
-    Lake"), but not always -- and either way both spellings must stay
-    searchable. Anglers search "Lake Geneva"; the DNR calls it "Geneva Lake".
-    """
-    alts: list[str] = []
-    if not official or official == hydro_name:
-        return hydro_name, alts
-    if RE_DNR_CODE.search(official):
-        # Internal code: keep the readable name, but still match the official one.
-        return hydro_name, [official]
-    return official, [hydro_name]
 
 
 def load(name: str, default):

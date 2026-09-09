@@ -33,12 +33,20 @@ full year across 20 lakes and every species present in them:
 
 | Measure | Result |
 |---|---|
-| Hourly scores | p25 43 · p50 54 · p75 63 · p95 76 |
-| Clamped at 100 | 0.00% |
-| Rating mix | Prime 1.8% · Good 21% · Fair 50% · Slow 22% · Poor 5% |
-| Daily peak | p25 66 · p50 73 · p95 91 |
-| Spread within a 5-day week | median 18 points |
-| **After a sharp pressure rise** | **day peak falls 12.5 on average, 86% of the time** |
+| Hourly scores | p25 46 · p50 56 · p75 67 · p95 80 |
+| Clamped at 100 | 0.00% of hours, 0.72% of daily peaks |
+| Rating mix | Prime 3.2% · Good 26% · Fair 47% · Slow 20% · Poor 4% |
+| Daily peak | p25 69 · p50 77 · p95 94 |
+| Spread within a 5-day week | median 17 points |
+| **After a sharp pressure rise** | **day peak falls 14.0 on average, 88% of the time** |
+
+> These figures were re-measured on 2026-09-09 after a code review found the
+> harness was computing day boundaries in UTC rather than lake-local time. It
+> had been scoring 00:00–16:00 local instead of 05:00–21:00, excluding the
+> entire evening bite window. The weights themselves held up — the corrected
+> sample shows a *stronger* frontal signal — but every number in this table
+> moved, which is a reminder that a validation harness needs the same scrutiny
+> as the thing it validates.
 
 That last row is the real validation: the post-frontal shutdown every angler
 knows about falls out of the weights rather than being hardcoded. Prime at 1.8%
@@ -65,7 +73,8 @@ DNR datasets.
 
 - **Bottom composition and hydrologic lake type.** Rock and gravel hold
   crayfish, muck grows weeds, sand is sparse cover. Lake type (seepage, spring,
-  drainage) stands in for clarity. Both now feed the bait engine.
+  drainage) stands in for clarity. Both now feed the bait engine. Coverage:
+  4,725 lakes with bottom composition, 4,884 with a lake type.
 - **Stocking history.** 8,794 records across 1,057 lakes, 2015-present.
   Joined by name matching at 88.6%; spot-checked exactly against the DNR's own
   tool for Park Lake (54 rows, every species total identical).

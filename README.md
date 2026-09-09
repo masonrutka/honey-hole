@@ -25,17 +25,27 @@ a phone at 5am. Honey Hole joins it together, keyed by the DNR's own waterbody i
 ```
 ingest/            Python ETL (run locally, output committed)
   wdnr.py            Shared ArcGIS REST client: pagination, retry, TLS
+  names.py           Shared name handling, used by 04 and 06
   01_lakes.py        24K Hydrography layer  -> 5,028 lakes with WGS84 centroids
   02_species.py      DNR lake pages         -> species, county, depth, landings
   03_regulations.py  Lake regulations layer -> 122k tidy regulation rows
-  04_build_dataset.py  merge + intern strings -> src/data/*.json
+  05_lake_facts.py   DNR facts pages        -> bottom composition, lake type
+  06_stocking.py     DNR stocking system    -> 8,794 records, joined by name
+  04_build_dataset.py  merge + intern strings -> src/data/*.json (run last)
 
 src/lib/           Pure, dependency-free rules engines (unit tested)
-  forecast.ts        Bite scoring from weather, light and solunar inputs
-  bait.ts            Condition-matched presentation suggestions
+  forecast.ts        Bite scoring from weather, light, solunar and turnover
+  timeline.ts        Multi-day outlook built on forecast.ts
+  bait.ts            Suggestions matched to conditions and lake bottom
   species.ts         Behavioural profiles for Wisconsin gamefish
   weather.ts         Open-Meteo client + water temperature estimation
   lakes.ts           Data access: search, proximity, regulation lookup
+  stocking.ts        DNR stocking history and what it implies
+  geometry.ts        Lake outlines as SVG paths
+  storage.ts         Saved and recent lakes (localStorage)
+
+scripts/
+  calibrate.mts      Replays a year of real weather through the bite engine
 
 src/app/           Next.js App Router (React Server Components)
 ```
@@ -89,14 +99,22 @@ npm test             # rules engine unit tests
 Refreshing the dataset from the DNR (only needed once a season):
 
 ```bash
-python3 ingest/01_lakes.py           # ~1 min
-python3 ingest/02_species.py --limit 0   # ~85 min, rate limited + resumable
-python3 ingest/03_regulations.py     # ~1 min
-python3 ingest/04_build_dataset.py   # instant
+python3 ingest/01_lakes.py               # ~1 min   hydrography -> 5,028 lakes
+python3 ingest/02_species.py --limit 0   # ~85 min  species, county, depth
+python3 ingest/03_regulations.py         # ~1 min   per-species regulations
+python3 ingest/05_lake_facts.py          # ~2 hr    bottom composition, lake type
+python3 ingest/06_stocking.py            # ~1 min   stocking history
+python3 ingest/04_build_dataset.py       # instant  merge -> src/data/
 ```
 
-The species scraper is deliberately polite: one request per second, every page
-cached to disk, and safe to interrupt and resume.
+Run in that order: `04` merges everything, so it goes last. Steps `02` and `05`
+are the slow ones and are deliberately polite -- one request per second, every
+page cached to disk, and safe to interrupt and resume. Both take
+`--from-cache` to re-parse without re-fetching, which turns a parser change
+from an 85-minute job into a few seconds.
+
+`06` reports the match rate for its name-based join; if that drops sharply the
+DNR has changed something and the output should not be trusted.
 
 ## Known limitations
 

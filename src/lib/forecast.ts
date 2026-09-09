@@ -87,18 +87,46 @@ function hoursBetween(a: Date, b: Date): number {
   return Math.abs(a.getTime() - b.getTime()) / 3_600_000;
 }
 
+/**
+ * Parsed timestamps for a weather series, cached against the array itself.
+ *
+ * The multi-day outlook calls biteForecast around 95 times with the same hours
+ * array, and each call sampled it five times. Parsing the ISO strings on every
+ * lookup meant roughly 160k Date constructions per lake page render. The series
+ * is immutable per request, so parse it once and binary search it.
+ */
+const TIME_CACHE = new WeakMap<WeatherHour[], number[]>();
+
+function timesFor(hours: WeatherHour[]): number[] {
+  let times = TIME_CACHE.get(hours);
+  if (!times) {
+    times = hours.map((h) => new Date(h.time).getTime());
+    TIME_CACHE.set(hours, times);
+  }
+  return times;
+}
+
 /** Nearest hourly sample to a given instant. */
 function sampleAt(hours: WeatherHour[], at: Date): WeatherHour | null {
-  let best: WeatherHour | null = null;
-  let bestGap = Infinity;
-  for (const h of hours) {
-    const gap = Math.abs(new Date(h.time).getTime() - at.getTime());
-    if (gap < bestGap) {
-      bestGap = gap;
-      best = h;
-    }
+  if (hours.length === 0) return null;
+  const times = timesFor(hours);
+  const target = at.getTime();
+
+  // The series is chronological, so the nearest sample is adjacent to the
+  // insertion point.
+  let lo = 0;
+  let hi = times.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (times[mid] < target) lo = mid + 1;
+    else hi = mid;
   }
-  return best;
+
+  const after = lo < times.length ? lo : times.length - 1;
+  const before = lo > 0 ? lo - 1 : 0;
+  return Math.abs(times[after] - target) < Math.abs(times[before] - target)
+    ? hours[after]
+    : hours[before];
 }
 
 // --- individual factors -----------------------------------------------------
@@ -366,13 +394,22 @@ export function moonPhaseName(phase: number): string {
   return "waning crescent";
 }
 
+/** Lower bound of each rating band. The single source of truth for the scale. */
+export const RATING_FLOOR: Record<Rating, number> = {
+  Prime: 82,
+  Good: 64,
+  Fair: 45,
+  Slow: 30,
+  Poor: 0,
+};
+
 export function ratingFor(score: number): Rating {
-  // Prime should be rare enough to mean something. Under the recalibrated
-  // weights a strong day lands in the low-to-mid 80s, so the bar sits there.
-  if (score >= 82) return "Prime";
-  if (score >= 64) return "Good";
-  if (score >= 45) return "Fair";
-  if (score >= 30) return "Slow";
+  // Prime should be rare enough to mean something: it covers about 3% of
+  // scored hours across a year of real Wisconsin weather.
+  if (score >= RATING_FLOOR.Prime) return "Prime";
+  if (score >= RATING_FLOOR.Good) return "Good";
+  if (score >= RATING_FLOOR.Fair) return "Fair";
+  if (score >= RATING_FLOOR.Slow) return "Slow";
   return "Poor";
 }
 

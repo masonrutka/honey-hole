@@ -85,14 +85,16 @@ function bundle(): WeatherBundle {
 
 describe("buildOutlook", () => {
   const lake = { acres: 500, maxDepthFt: 30 };
+  // The fixture is a fixed date in the past, so these pass `null` for `now`
+  // rather than having every hour filtered out as elapsed.
 
   it("produces one entry per requested day", () => {
-    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 4);
+    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 4, null);
     expect(out.length).toBe(4);
   });
 
   it("scores a full span of daytime hours for each day", () => {
-    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 3);
+    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 3, null);
     for (const day of out) {
       expect(day.hours.length).toBeGreaterThan(10);
       for (const h of day.hours) {
@@ -104,12 +106,12 @@ describe("buildOutlook", () => {
   });
 
   it("never asks for more days than the weather data covers", () => {
-    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 99);
+    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 99, null);
     expect(out.length).toBeLessThanOrEqual(5);
   });
 
   it("flags a flat, uniformly good day instead of inventing a window", () => {
-    const out = buildOutlook(bundle(), lake, "panfish", 43.0, -89.0, 1);
+    const out = buildOutlook(bundle(), lake, "panfish", 43.0, -89.0, 1, null);
     const day = out[0];
     // Either it found a real window, or it said the whole day is good --
     // it must never report a "window" covering nearly all of it.
@@ -123,11 +125,32 @@ describe("buildOutlook", () => {
   });
 
   it("peaks around dawn or dusk for a low-light species", () => {
-    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 1);
+    const out = buildOutlook(bundle(), lake, "walleye", 43.0, -89.0, 1, null);
     const day = out[0];
     const peak = day.hours.find((h) => h.score === day.peakScore)!;
     const h = peak.time.getUTCHours();
     // Sunrise 05:30, sunset 20:30 in this fixture.
     expect(h <= 8 || h >= 18).toBe(true);
+  });
+});
+
+describe("elapsed hours", () => {
+  it("drops hours that have already passed today", () => {
+    const b = bundle();
+    // 14:00 UTC on the fixture's "today" (offset 0).
+    const now = new Date(Date.UTC(2026, 5, 15, 14));
+    const out = buildOutlook(b, { acres: 500, maxDepthFt: 30 }, "walleye", 43, -89, 2, now);
+    const today = out[0];
+    for (const h of today.hours) {
+      expect(h.time.getTime() + 3_600_000).toBeGreaterThan(now.getTime());
+    }
+  });
+
+  it("keeps the whole day when no clock is supplied", () => {
+    const b = bundle();
+    const withNow = buildOutlook(b, { acres: 500 }, "walleye", 43, -89, 1,
+      new Date(Date.UTC(2026, 5, 15, 18)));
+    const without = buildOutlook(b, { acres: 500 }, "walleye", 43, -89, 1, null);
+    expect(without[0].hours.length).toBeGreaterThan(withNow[0].hours.length);
   });
 });

@@ -90,19 +90,27 @@ export function stockingBySpecies(wbic: number): SpeciesStocking[] {
  * reproduction -- many waters are stocked to supplement it -- so this describes
  * the pattern and leaves the conclusion to the angler.
  */
+/** Earliest year the stocking ingest pulls. Keep in step with 06_stocking.py. */
+export const STOCKING_SINCE = 2015;
+
 export function stockingNote(
   entry: SpeciesStocking,
-  windowYears = 12,
+  windowYears?: number,
 ): string {
-  const n = entry.years.length;
+  // Derive the window from the data rather than hardcoding it, or the phrasing
+  // drifts as years pass ("13 of the last 12 years").
+  const span =
+    windowYears ??
+    Math.max(1, new Date().getUTCFullYear() - STOCKING_SINCE + 1);
+  const n = Math.min(entry.years.length, span);
   const fish = entry.totalFish.toLocaleString();
   const name = entry.species.toLowerCase();
 
-  if (n >= Math.round(windowYears * 0.7)) {
-    return `Stocked in ${n} of the last ${windowYears} years — this ${name} fishery is actively maintained, so expect consistent year classes.`;
+  if (n >= Math.round(span * 0.7)) {
+    return `Stocked in ${n} of the last ${span} years — this ${name} fishery is actively maintained, so expect consistent year classes.`;
   }
   if (n >= 3) {
-    return `Stocked in ${n} of the last ${windowYears} years (${fish} fish) — supplemented rather than sustained entirely by stocking.`;
+    return `Stocked in ${n} of the last ${span} years (${fish} fish) — supplemented rather than sustained entirely by stocking.`;
   }
-  return `Stocked in ${n === 1 ? "one year" : `${n} years`} of the last ${windowYears} (${fish} fish) — occasional stocking only.`;
+  return `Stocked in ${n === 1 ? "one year" : `${n} years`} of the last ${span} (${fish} fish) — occasional stocking only.`;
 }

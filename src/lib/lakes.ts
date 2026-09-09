@@ -41,6 +41,8 @@ export interface Lake {
   dnrMapUrl: string | null;
   species: LakeSpecies[];
   hasRegs: boolean;
+  /** Whether any DNR stocking record matched this lake. */
+  hasStocking: boolean;
   dnrUrl: string;
 }
 
@@ -74,6 +76,27 @@ export function getRegulations(wbic: number): Regulation[] {
 
 export function totalLakes(): number {
   return LAKES.length;
+}
+
+/**
+ * How many lakes actually carry each kind of data. Used so the About page
+ * states real coverage rather than an unqualified "most lakes", which drifts
+ * out of date as ingests complete.
+ */
+export function coverage(): {
+  species: number;
+  bottom: number;
+  lakeType: number;
+  regulations: number;
+  stocking: number;
+} {
+  return {
+    species: LAKES.filter((l) => l.species.length > 0).length,
+    bottom: LAKES.filter((l) => l.bottom).length,
+    lakeType: LAKES.filter((l) => l.lakeType).length,
+    regulations: LAKES.filter((l) => l.hasRegs).length,
+    stocking: LAKES.filter((l) => l.hasStocking).length,
+  };
 }
 
 /** Lakes worth featuring on the home page: big, named, with species data. */

@@ -42,9 +42,16 @@ export function read(key: string, s: Store | null = store()): SavedLake[] {
     if (!Array.isArray(parsed)) return [];
     // Anything could be in storage -- another tab, an older version, a user
     // editing it by hand. Keep only entries that still look like lakes.
+    // Validate every field the UI actually renders. Checking only wbic and
+    // name let an older or hand-edited entry through without `acres`, and
+    // LakeRow's acres.toLocaleString() would then take down the whole page.
     return parsed.filter(
       (x): x is SavedLake =>
-        x && typeof x.wbic === "number" && typeof x.name === "string",
+        x &&
+        typeof x.wbic === "number" &&
+        typeof x.name === "string" &&
+        typeof x.acres === "number" &&
+        (x.county === null || typeof x.county === "string"),
     );
   } catch {
     return [];

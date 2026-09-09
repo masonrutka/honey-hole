@@ -30,7 +30,10 @@ export interface Lake {
   lon: number;
   kind: string;
   boatLandings: number | null;
-  hasContourMap: boolean;
+  /** DNR bathymetric map PDF, where one has been published (~46% of lakes). */
+  contourMapUrl: string | null;
+  /** Deep link into the DNR Surface Water Data Viewer for this lake. */
+  dnrMapUrl: string | null;
   species: LakeSpecies[];
   hasRegs: boolean;
   dnrUrl: string;

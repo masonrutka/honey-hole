@@ -47,6 +47,24 @@ RE_LI = re.compile(r"<li>(.*?)</li>", re.I | re.S)
 RE_SPECIES = re.compile(r"^(.*?)\s*\((Abundant|Common|Present)\)$", re.I)
 RE_LANDINGS = re.compile(r"Boat\s+Landings\s*\((\d+)\)", re.I)
 RE_TITLE_H1 = re.compile(r"<h1[^>]*>\s*([^<]+?)\s*</h1>", re.I)
+# Maps section: a bathymetric PDF (only some lakes have one) and a deep link
+# into the DNR's Surface Water Data Viewer (nearly all lakes do).
+RE_CONTOUR = re.compile(
+    r"href=['\"]([^'\"]*DownloadDocument\?id=\d+)['\"][^>]*>\s*Contour", re.I
+)
+RE_SWDV = re.compile(
+    r"href=['\"]([^'\"]*viewer=SWDV[^'\"]*)['\"]", re.I
+)
+
+
+def unescape_url(url: str) -> str:
+    """Unescape a URL from an href without mangling it.
+
+    html.unescape() is too aggressive here: it resolves entity names that lack a
+    trailing semicolon, so "?viewer=SWDV&param=LAKE" becomes "?viewer=SWDV\u00b6m=LAKE"
+    -- "&para" is read as the pilcrow. Inside an href only &amp; needs undoing.
+    """
+    return url.replace("&amp;", "&")
 
 
 def strip_tags(fragment: str) -> str:
@@ -114,7 +132,12 @@ def parse(wbic: int, page: str) -> dict:
             else:
                 rec["species"].append({"name": entry, "abundance": None})
 
-    rec["has_contour_map"] = "Contour" in text
+    if m := RE_CONTOUR.search(page):
+        rec["contour_map_url"] = unescape_url(m.group(1))
+    if m := RE_SWDV.search(page):
+        rec["dnr_map_url"] = unescape_url(m.group(1))
+
+    rec["has_contour_map"] = "contour_map_url" in rec
     return rec
 
 
@@ -172,6 +195,8 @@ def main() -> int:
           f"{sum(len(r['species']) for r in results):,} species rows")
     print(f"{sum(1 for r in results if r.get('county')):,} with county, "
           f"{sum(1 for r in results if r.get('max_depth_ft')):,} with max depth")
+    print(f"{sum(1 for r in results if r.get('contour_map_url')):,} with a contour map, "
+          f"{sum(1 for r in results if r.get('dnr_map_url')):,} with a DNR map link")
     print("\nMost common species:")
     for name, n in sorted(species_counts.items(), key=lambda kv: -kv[1])[:12]:
         print(f"  {name:<26} {n:>5,} lakes")

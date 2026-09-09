@@ -7,6 +7,7 @@ import { getLake, getRegulations, lakeSpeciesProfiles } from "@/lib/lakes";
 import { SPECIES, type SpeciesKey } from "@/lib/species";
 import ConditionsPanel, { ConditionsSkeleton } from "@/components/ConditionsPanel";
 import LakeMemory from "@/components/LakeMemory";
+import LakeMap, { LakeMapSkeleton } from "@/components/LakeMap";
 
 // Weather drives this page, so refresh hourly rather than on every request.
 export const revalidate = 3600;
@@ -87,6 +88,10 @@ export default async function LakePage({ params, searchParams }: Props) {
         </Suspense>
       </div>
 
+      <Suspense fallback={<LakeMapSkeleton />}>
+        <LakeMap lake={lake} />
+      </Suspense>
+
       <section className="mt-8">
         <h2 className="text-sm font-semibold">Species present</h2>
         {present.length === 0 ? (
@@ -153,14 +158,6 @@ export default async function LakePage({ params, searchParams }: Props) {
           className="rounded-lg border border-edge bg-surface px-4 py-2 hover:border-accent hover:text-accent transition-colors"
         >
           DNR lake page ↗
-        </a>
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${lake.lat},${lake.lon}`}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="rounded-lg border border-edge bg-surface px-4 py-2 hover:border-accent hover:text-accent transition-colors"
-        >
-          Open in Maps ↗
         </a>
       </section>
     </div>

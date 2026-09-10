@@ -54,7 +54,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               {/*
                 A honey jar. A fish inside it read as a blob below about 24px,
                 and the mark is used at 24px and smaller almost everywhere, so
-                the jar carries it alone.
+                the jar carries it alone. The honey surface is deliberately
+                irregular -- a symmetric wave cresting dead centre reads as a
+                drawn shape rather than as something that settled.
               */}
               <svg
                 viewBox="0 0 24 24"
@@ -69,7 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   strokeWidth="1.7"
                 />
                 <path
-                  d="M4.8 10.4c1.8 0 1.8 1.2 3.6 1.2s1.8-1.2 3.6-1.2 1.8 1.2 3.6 1.2 1.8-1.2 3.6-1.2v7.5a3.2 3.2 0 0 1-3.2 3.2H8a3.2 3.2 0 0 1-3.2-3.2Z"
+                  d="M4.8 12.1c1.4.1 2-1.3 3.4-1.4 1.9-.2 2.6 1.6 4.6 1.8 2.3.2 4-1 6.4-1.3v6.6a3.2 3.2 0 0 1-3.2 3.2H8a3.2 3.2 0 0 1-3.2-3.2Z"
                   fill="currentColor"
                   opacity="0.55"
                 />

@@ -1,7 +1,7 @@
 # Honey Hole — Wisconsin lake and fishing intelligence
 
 Species, regulations, live conditions and bait suggestions for **5,028 Wisconsin
-lakes**, built entirely on open Wisconsin DNR data.
+lakes**, built entirely on trusted Wisconsin DNR data.
 
 Wisconsin publishes an unusual amount of high-quality fisheries data, but it is
 scattered across three separate systems and none of it is designed to be read on

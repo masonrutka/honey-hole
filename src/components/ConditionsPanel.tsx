@@ -11,9 +11,12 @@ import BiteScore from "./BiteScore";
 import FactorList from "./FactorList";
 import OutlookStrip from "./OutlookStrip";
 
-/** "waning crescent" -> "Waning crescent". */
-function sentenceCase(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+/** "waning crescent" -> "Waning Crescent"; leaves "75%" alone. */
+function titleCase(text: string): string {
+  return text
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -161,9 +164,9 @@ export default async function ConditionsPanel({
             value={`${Math.round(current.windMph)} mph ${compass(current.windDirDeg)}`}
           />
           <Stat label="Pressure" value={`${Math.round(current.pressureHpa)} mb`} />
-          <Stat label="Sky" value={`${Math.round(current.cloudPct)}% cloud`} />
-          <Stat label="Season" value={sentenceCase(season.replace("_", " "))} />
-          <Stat label="Moon" value={sentenceCase(moonPhaseName(celestial.moonPhase))} />
+          <Stat label="Sky" value={`${Math.round(current.cloudPct)}% Cloud`} />
+          <Stat label="Season" value={titleCase(season.replace("_", " "))} />
+          <Stat label="Moon" value={titleCase(moonPhaseName(celestial.moonPhase))} />
           <Stat
             label="Sunrise / set"
             value={`${clock(weather.sunrise[weather.todayIndex])} / ${clock(

@@ -20,7 +20,7 @@ export default function Home() {
         </h1>
         <p className="mt-5 max-w-xl text-muted text-base sm:text-lg text-pretty">
           Species, regulations, live conditions and what to throw — built
-          entirely on open Wisconsin DNR data.
+          entirely on trusted Wisconsin DNR data.
         </p>
 
         <div className="mt-9 max-w-2xl">

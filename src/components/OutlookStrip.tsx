@@ -102,17 +102,29 @@ export default function OutlookStrip({
                   <span
                     key={h.time.toISOString()}
                     className="bar-rise flex-1 rounded-sm"
-                    title={`${fmtTime(h.time)} · ${h.score}`}
+                    title={`${fmtTime(h.time)} · ${h.score}${
+                      h.elapsed ? " · already passed" : ""
+                    }`}
                     style={{
                       height: `${Math.max(8, h.score)}%`,
-                      background: barColor(h.score),
-                      opacity: h.elapsed
-                        ? 0.13
+                      // Elapsed hours keep their height -- the shape of the day
+                      // still tells you something -- but drop to grey so the
+                      // boundary with now is obvious at a glance.
+                      background: h.elapsed ? "var(--muted)" : barColor(h.score),
+                      ["--bar-opacity" as string]: h.elapsed
+                        ? 0.22
                         : ratingFor(h.score) === "Fair"
-                          ? 0.4
+                          ? 0.55
                           : h.score >= 64
                             ? 0.95
-                            : 0.4,
+                            : 0.55,
+                      opacity: h.elapsed
+                        ? 0.22
+                        : ratingFor(h.score) === "Fair"
+                          ? 0.55
+                          : h.score >= 64
+                            ? 0.95
+                            : 0.55,
                       ["--bar-i" as string]: hi,
                     }}
                   />

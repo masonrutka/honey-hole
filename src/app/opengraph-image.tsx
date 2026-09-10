@@ -50,7 +50,7 @@ export default async function Image() {
           {`Species, regulations, live conditions and bait suggestions for ${totalLakes().toLocaleString()} Wisconsin lakes.`}
         </div>
         <div style={{ display: "flex", gap: 40, marginTop: 48, fontSize: 26, color: "#98a599" }}>
-          <div style={{ display: "flex" }}>Built on open Wisconsin DNR data</div>
+          <div style={{ display: "flex" }}>Built on trusted Wisconsin DNR data</div>
         </div>
       </div>
     ),

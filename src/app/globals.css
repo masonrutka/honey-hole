@@ -173,7 +173,14 @@ body {
     }
   }
 
-  /* Outlook bars grow up out of the baseline, in the order of the day. */
+  /*
+    Outlook bars grow up out of the baseline, in the order of the day.
+
+    The keyframe animates to var(--bar-opacity), not to 1. animation-fill-mode
+    keeps the final frame applied, so a hardcoded "opacity: 1" here silently
+    overrode each bar's own opacity once the animation finished -- which is what
+    stopped elapsed hours from looking elapsed.
+  */
   .bar-rise {
     animation: bar-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--bar-i, 0) * 18ms);
@@ -186,7 +193,7 @@ body {
     }
     to {
       transform: scaleY(1);
-      opacity: 1;
+      opacity: var(--bar-opacity, 1);
     }
   }
 

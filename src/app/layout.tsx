@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s — Honey Hole",
   },
   description:
-    "Species, regulations, conditions and bait suggestions for 5,000 Wisconsin lakes, built on open Wisconsin DNR data.",
+    "Species, regulations, conditions and bait suggestions for 5,000 Wisconsin lakes, built on trusted Wisconsin DNR data.",
   manifest: "/manifest.webmanifest",
 };
 

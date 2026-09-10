@@ -36,11 +36,14 @@ OUT = Path(__file__).parent.parent / "src" / "data" / "hero-shapes.json"
 # -- Fence, Crawling Stone, Flambeau, Pokegama -- over to the eastern side of
 # the frame, which is the open half of the page. Centred, they sat behind the
 # headline.
-LAT_MIN, LAT_MAX = 45.91, 46.11
+LAT_MIN, LAT_MAX = 45.875, 46.075
 LON_MIN, LON_MAX = -90.05, -89.78
 
-MAX_LAKES = 30
-MIN_ACRES = 110
+# 42 rather than 30, down to 50 acres rather than 110. The big chain still
+# dominates; the smaller water exists to close the gaps -- at 110 acres the
+# north-west corner of this frame held nothing at all, which read as a hole.
+MAX_LAKES = 42
+MIN_ACRES = 50
 
 # Fine, because each lake now draws large enough for its shoreline to matter.
 OFFSET = 0.00018

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { geolocationBlocker, geolocationMessage } from "@/lib/geolocation";
 
 export interface SpeciesLake {
   wbic: number;
@@ -93,14 +94,9 @@ export default function SpeciesLakeList({
   }, [query, speciesKey]);
 
   function rankByBite() {
-    if (typeof window !== "undefined" && !window.isSecureContext) {
-      setError(
-        "Ranking by bite needs your location, which requires a secure connection. This works on the deployed site.",
-      );
-      return;
-    }
-    if (!navigator.geolocation) {
-      setError("This browser cannot share your location.");
+    const blocked = geolocationBlocker();
+    if (blocked) {
+      setError(blocked);
       return;
     }
     setLocating(true);
@@ -131,11 +127,7 @@ export default function SpeciesLakeList({
         }
       },
       (err) => {
-        setError(
-          err.code === err.PERMISSION_DENIED
-            ? "Location permission was denied."
-            : "Could not get your location.",
-        );
+        setError(geolocationMessage(err));
         setLocating(false);
       },
       { timeout: 10000, maximumAge: 60000 },

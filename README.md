@@ -31,8 +31,8 @@ ingest/            Python ETL (run locally, output committed)
   03_regulations.py  Lake regulations layer -> 122k tidy regulation rows
   05_lake_facts.py   DNR facts pages        -> bottom composition, lake type
   06_stocking.py     DNR stocking system    -> 8,794 records, joined by name
-  07_hero_shapes.py  A real map window       -> 30 outlines of the Eagle River
-                                                lake district, for the home
+  07_hero_shapes.py  A real map window       -> 29 outlines of the Lac du
+                                                Flambeau chain, for the home
                                                 page artwork
   04_build_dataset.py  merge + intern strings -> src/data/*.json (run last)
 

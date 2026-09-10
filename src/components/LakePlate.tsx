@@ -8,8 +8,8 @@ interface HeroShape {
 }
 
 /**
- * A real map excerpt: the Eagle River and Three Lakes country where Oneida,
- * Vilas and Forest counties meet -- about 14 miles across.
+ * A real map excerpt: the Lac du Flambeau chain west of Minocqua -- Fence,
+ * Crawling Stone, White Sand, Flambeau and Pokegama -- about 13 miles across.
  *
  * Every outline sits where it actually sits, at its true relative size,
  * because all 30 are projected through one shared bounding box. Earlier

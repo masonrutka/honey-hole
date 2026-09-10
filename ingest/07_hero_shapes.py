@@ -32,8 +32,12 @@ OUT = Path(__file__).parent.parent / "src" / "data" / "hero-shapes.json"
 #
 # Roughly 14 by 13 miles. Deliberately tight: fewer, larger lakes carry more
 # shoreline detail than a wider view crammed with specks.
-LAT_MIN, LAT_MAX = 45.75, 45.95
-LON_MIN, LON_MAX = -89.25, -88.98
+# Shifted west of centre on purpose: that pushes the big Lac du Flambeau water
+# -- Fence, Crawling Stone, Flambeau, Pokegama -- over to the eastern side of
+# the frame, which is the open half of the page. Centred, they sat behind the
+# headline.
+LAT_MIN, LAT_MAX = 45.91, 46.11
+LON_MIN, LON_MAX = -90.05, -89.78
 
 MAX_LAKES = 30
 MIN_ACRES = 110

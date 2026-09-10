@@ -34,7 +34,7 @@ function toleranceFor(acres: number): number {
   return Math.max(0.000005, sideDegrees / 150);
 }
 
-type Ring = [number, number][];
+export type Ring = [number, number][];
 
 export async function fetchLakeShape(
   wbic: number,
@@ -69,6 +69,99 @@ export async function fetchLakeShape(
   if (rings.length === 0) return null;
 
   return shapeFromRings(rings);
+}
+
+export interface LakeOnMap {
+  wbic: number;
+  name: string;
+  /** Path in the shared coordinate space. */
+  path: string;
+  /** Centre, for placing labels or sizing strokes. */
+  cx: number;
+  cy: number;
+  /** Width of this lake in the shared space, for scaling its stroke. */
+  extent: number;
+}
+
+export interface LakeMapView {
+  viewBox: string;
+  lakes: LakeOnMap[];
+  widthMiles: number;
+}
+
+/**
+ * Project many lakes through ONE bounding box, so they land where they
+ * actually are relative to each other.
+ *
+ * shapeFromRings normalises each lake to its own box, which is right for a
+ * single outline and wrong for a group: it throws away exactly the information
+ * that makes a set of lakes read as a map.
+ */
+export function mapFromLakes(
+  input: { wbic: number; name: string; rings: Ring[] }[],
+  padding = 0.02,
+): LakeMapView | null {
+  let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+  for (const lake of input) {
+    for (const ring of lake.rings) {
+      for (const [lon, lat] of ring) {
+        if (lon < minLon) minLon = lon;
+        if (lon > maxLon) maxLon = lon;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      }
+    }
+  }
+  if (!Number.isFinite(minLon) || !Number.isFinite(minLat)) return null;
+
+  const padLon = (maxLon - minLon) * padding;
+  const padLat = (maxLat - minLat) * padding;
+  minLon -= padLon; maxLon += padLon;
+  minLat -= padLat; maxLat += padLat;
+
+  // Longitude degrees shrink toward the poles; without this the map is stretched.
+  const midLat = (minLat + maxLat) / 2;
+  const lonScale = Math.cos((midLat * Math.PI) / 180);
+  const x = (lon: number) => (lon - minLon) * lonScale;
+  const y = (lat: number) => maxLat - lat;
+
+  const width = Math.max(1e-9, (maxLon - minLon) * lonScale);
+  const height = Math.max(1e-9, maxLat - minLat);
+
+  const lakes: LakeOnMap[] = [];
+  for (const lake of input) {
+    let lo = Infinity, hi = -Infinity, top = Infinity, bot = -Infinity;
+    const parts: string[] = [];
+    for (const ring of lake.rings) {
+      if (ring.length < 3) continue;
+      const pts = ring.map(([lon, lat]) => {
+        const px = x(lon), py = y(lat);
+        if (px < lo) lo = px;
+        if (px > hi) hi = px;
+        if (py < top) top = py;
+        if (py > bot) bot = py;
+        return `${px.toFixed(6)},${py.toFixed(6)}`;
+      });
+      parts.push(`M${pts.join("L")}Z`);
+    }
+    if (parts.length === 0) continue;
+    lakes.push({
+      wbic: lake.wbic,
+      name: lake.name,
+      path: parts.join(""),
+      cx: (lo + hi) / 2,
+      cy: (top + bot) / 2,
+      extent: Math.max(hi - lo, bot - top),
+    });
+  }
+  if (lakes.length === 0) return null;
+
+  const MILES_PER_DEGREE_LAT = 69.055;
+  return {
+    viewBox: `0 0 ${width.toFixed(6)} ${height.toFixed(6)}`,
+    lakes,
+    widthMiles: width * MILES_PER_DEGREE_LAT,
+  };
 }
 
 /** Convert WGS84 rings into a normalised SVG path. Exported for testing. */

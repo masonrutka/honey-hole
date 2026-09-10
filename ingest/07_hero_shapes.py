@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Bake a handful of real lake outlines into the app for use as artwork.
+"""Bake a real map excerpt of northern Wisconsin into the app as artwork.
 
-The lake shapes are the most distinctive thing this project owns -- actual DNR
-survey geometry, not stock imagery -- but they only appear on individual lake
-pages. This pulls a set of recognisable Wisconsin waters and stores their rings
-so the home page can draw them.
+Rather than scattering lakes arbitrarily, this takes an actual window of the
+Northern Highland lake district -- the Minocqua and Trout Lake country of Vilas
+and Oneida counties, the densest concentration of lakes in the state -- and
+stores the outlines with their true coordinates. The home page then draws them
+where they genuinely sit, at their true relative sizes.
 
-Stored as raw WGS84 rings rather than SVG paths so the app can reuse the same
-tested shapeFromRings() that renders the lake pages.
+Real lakes do not overlap, so no packing is needed: geography does the layout.
+
+Stored as raw WGS84 rings so the app projects them all through one shared
+bounding box, which is what makes it read as a map rather than a collage.
 
 Usage:  python3 ingest/07_hero_shapes.py
 """
@@ -22,28 +25,36 @@ import wdnr  # noqa: E402
 
 OUT = Path(__file__).parent.parent / "src" / "data" / "hero-shapes.json"
 
-# Waters a Wisconsin angler recognises on sight, chosen for variety of outline
-# rather than size alone -- a flowage, a drumlin lake, a big open basin.
-WANTED = [
-    131100,   # Lake Winnebago
-    2294900,  # Turtle Flambeau Flowage
-    1377100,  # Petenwell Lake
-    2399700,  # Lake Chippewa
-    808700,   # Lake Koshkonong
-    805400,   # Lake Mendota
-    139900,   # Lake Butte des Morts
-    322800,   # Shawano Lake
-    758300,   # Geneva Lake
-    762400,   # Big Muskego Lake
-]
+# The window: Vilas and Oneida counties around Minocqua and Trout Lake. Chosen
+# by sweeping the state for lake density -- 263 lakes of 40 acres or more sit
+# inside this box, more than anywhere else in Wisconsin.
+LAT_MIN, LAT_MAX = 45.80, 46.25
+LON_MIN, LON_MAX = -89.90, -89.30
 
-# Aggressive simplification: these render a few hundred pixels wide at most.
-OFFSET = 0.0006
+# Enough lakes to read as a map, few enough to stay light.
+MAX_LAKES = 55
+MIN_ACRES = 55
+
+# These draw only a few hundred pixels across in total, so simplify hard.
+OFFSET = 0.0009
 
 
 def main() -> int:
+    app_lakes = json.loads(
+        (Path(__file__).parent.parent / "src" / "data" / "lakes.json").read_text()
+    )
+    window = [
+        l for l in app_lakes
+        if LAT_MIN <= l["lat"] <= LAT_MAX
+        and LON_MIN <= l["lon"] <= LON_MAX
+        and l["acres"] >= MIN_ACRES
+    ]
+    window.sort(key=lambda l: -l["acres"])
+    wanted = [l["wbic"] for l in window[:MAX_LAKES]]
+    print(f"{len(window)} lakes in the window; taking the largest {len(wanted)}\n")
+
     shapes = []
-    for wbic in WANTED:
+    for wbic in wanted:
         data = wdnr._get(
             wdnr.WATERBODIES + "/query",
             {
@@ -67,17 +78,17 @@ def main() -> int:
         # thumbnail scale.
         rings.sort(key=len, reverse=True)
         rings = rings[:1]
-        if not rings or len(rings[0]) < 6:
-            print(f"  ! {wbic} ({name}): too few points after simplifying")
+        if not rings or len(rings[0]) < 5:
             continue
 
         shapes.append({"wbic": wbic, "name": name, "rings": rings})
-        print(f"  {name:<22} {len(rings[0]):>4} points")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(shapes, separators=(",", ":")))
     kb = OUT.stat().st_size / 1024
-    print(f"\nwrote {OUT} ({kb:.1f} KB, {len(shapes)} lakes)")
+    pts = sum(len(s["rings"][0]) for s in shapes)
+    print(f"wrote {OUT} ({kb:.1f} KB, {len(shapes)} lakes, {pts:,} points)")
+    print("largest:", ", ".join(s["name"] for s in shapes[:5]))
     return 0
 
 

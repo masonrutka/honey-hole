@@ -8,15 +8,18 @@ interface HeroShape {
 }
 
 /**
- * A real map excerpt: the Minocqua and Trout Lake country of Vilas and Oneida
- * counties, the densest lake district in Wisconsin.
+ * A real map excerpt: the Eagle River and Three Lakes country where Oneida,
+ * Vilas and Forest counties meet -- about 14 miles across.
  *
  * Every outline sits where it actually sits, at its true relative size,
- * because all 55 are projected through one shared bounding box. Earlier
+ * because all 30 are projected through one shared bounding box. Earlier
  * versions scattered them -- by hand, then on a grid, then by packing -- and
  * each needed its own machinery to avoid collisions. Real lakes do not
  * overlap, so geography does that work for free, and the result reads as a
  * place rather than as an arrangement.
+ *
+ * The window is deliberately tight. A wider view holds more lakes but renders
+ * them as specks; at this scale each one carries its actual shoreline.
  *
  * Decorative: hidden from assistive tech, and baked in at build time so it
  * never blocks a render.
@@ -40,7 +43,7 @@ export default function LakePlate() {
         /* Zoomed past the frame and cropped, so the map runs off the edges the
            way a chart excerpt does rather than sitting as a contained picture. */
         className="absolute right-0 top-1/2 -translate-y-1/2
-                   h-[165%] w-[95%] sm:h-[150%] sm:w-[70%]"
+                   h-[150%] w-[92%] sm:h-[135%] sm:w-[66%]"
       >
         {view.lakes.map((lake) => (
           <path
@@ -51,7 +54,7 @@ export default function LakePlate() {
             stroke="var(--accent)"
             /* One stroke weight across the map, as a survey sheet would have,
                rather than scaling per lake. */
-            strokeWidth={span / 620}
+            strokeWidth={span / 520}
             strokeOpacity="0.8"
             strokeLinejoin="round"
           />

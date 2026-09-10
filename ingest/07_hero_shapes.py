@@ -25,18 +25,21 @@ import wdnr  # noqa: E402
 
 OUT = Path(__file__).parent.parent / "src" / "data" / "hero-shapes.json"
 
-# The window: Vilas and Oneida counties around Minocqua and Trout Lake. Chosen
-# by sweeping the state for lake density -- 263 lakes of 40 acres or more sit
-# inside this box, more than anywhere else in Wisconsin.
-LAT_MIN, LAT_MAX = 45.80, 46.25
-LON_MIN, LON_MAX = -89.90, -89.30
+# The window: the Eagle River and Three Lakes country where Oneida, Vilas and
+# Forest counties meet. Chosen by sweeping the state at this scale -- it holds
+# 49 lakes over 80 acres, 13 of them over 500, which is the best mix of density
+# and recognisable water anywhere in Wisconsin.
+#
+# Roughly 14 by 13 miles. Deliberately tight: fewer, larger lakes carry more
+# shoreline detail than a wider view crammed with specks.
+LAT_MIN, LAT_MAX = 45.75, 45.95
+LON_MIN, LON_MAX = -89.25, -88.98
 
-# Enough lakes to read as a map, few enough to stay light.
-MAX_LAKES = 55
-MIN_ACRES = 55
+MAX_LAKES = 30
+MIN_ACRES = 110
 
-# These draw only a few hundred pixels across in total, so simplify hard.
-OFFSET = 0.0009
+# Fine, because each lake now draws large enough for its shoreline to matter.
+OFFSET = 0.00018
 
 
 def main() -> int:

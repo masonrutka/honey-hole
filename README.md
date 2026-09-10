@@ -31,9 +31,9 @@ ingest/            Python ETL (run locally, output committed)
   03_regulations.py  Lake regulations layer -> 122k tidy regulation rows
   05_lake_facts.py   DNR facts pages        -> bottom composition, lake type
   06_stocking.py     DNR stocking system    -> 8,794 records, joined by name
-  07_hero_shapes.py  A real map window       -> 55 outlines of the Vilas and
-                                                Oneida lake district, for the
-                                                home page artwork
+  07_hero_shapes.py  A real map window       -> 30 outlines of the Eagle River
+                                                lake district, for the home
+                                                page artwork
   04_build_dataset.py  merge + intern strings -> src/data/*.json (run last)
 
 src/lib/           Pure, dependency-free rules engines (unit tested)

@@ -56,14 +56,26 @@ export default function OutlookStrip({
   const bestDay = days.reduce((a, b) => (b.peakScore > a.peakScore ? b : a));
   const bestIndex = days.indexOf(bestDay);
 
+  // Label the ends and a few points between, rather than all 19 hours.
+  const template = days[0].hours;
+  const TICKS = 5;
+  const axis =
+    template.length > 1
+      ? Array.from({ length: TICKS }, (_, i) =>
+          fmtTime(
+            template[Math.round((i * (template.length - 1)) / (TICKS - 1))].time,
+          ),
+        )
+      : [];
+
   return (
     <section className="mt-6">
-      <h2 className="text-sm font-semibold">
+      <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
         When to go for {speciesName.toLowerCase()}
       </h2>
       <p className="mt-1 text-xs text-muted">
-        Peak score for each day, and the longest good stretch. Bars run
-        4am to 10pm.
+        Each bar is one hour. Taller and brighter is better; faded hours have
+        already passed.
       </p>
 
       <ul className="mt-3 space-y-1.5">
@@ -86,15 +98,22 @@ export default function OutlookStrip({
                 className="flex flex-1 items-end gap-px h-7"
                 aria-hidden="true"
               >
-                {day.hours.map((h) => (
+                {day.hours.map((h, hi) => (
                   <span
                     key={h.time.toISOString()}
-                    className="flex-1 rounded-sm"
+                    className="bar-rise flex-1 rounded-sm"
+                    title={`${fmtTime(h.time)} · ${h.score}`}
                     style={{
                       height: `${Math.max(8, h.score)}%`,
                       background: barColor(h.score),
-                      opacity: ratingFor(h.score) === "Fair" ? 0.4
-                        : h.score >= 64 ? 0.95 : 0.4,
+                      opacity: h.elapsed
+                        ? 0.13
+                        : ratingFor(h.score) === "Fair"
+                          ? 0.4
+                          : h.score >= 64
+                            ? 0.95
+                            : 0.4,
+                      ["--bar-i" as string]: hi,
                     }}
                   />
                 ))}
@@ -133,6 +152,23 @@ export default function OutlookStrip({
           </li>
         ))}
       </ul>
+
+      {/*
+        One axis for every row. This only works because buildOutlook keeps
+        elapsed hours rather than dropping them, so all days span the same
+        range and the ticks line up.
+      */}
+      {axis.length > 0 && (
+        <div className="mt-1.5 flex items-baseline gap-3 px-3">
+          <span className="w-20 shrink-0" aria-hidden="true" />
+          <span className="flex flex-1 justify-between text-[10px] tabular-nums text-muted">
+            {axis.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </span>
+          <span className="w-8 shrink-0" aria-hidden="true" />
+        </div>
+      )}
     </section>
   );
 }

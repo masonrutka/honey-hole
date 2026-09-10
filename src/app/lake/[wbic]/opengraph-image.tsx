@@ -31,18 +31,18 @@ export default async function Image({ params }: { params: Promise<{ wbic: string
           flexDirection: "column",
           justifyContent: "center",
           padding: "80px",
-          background: "linear-gradient(135deg, #16273a 0%, #0a1018 55%)",
-          color: "#e8eef5",
+          background: "linear-gradient(140deg, #16302f 0%, #0b100d 58%)",
+          color: "#ecefe8",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 28, letterSpacing: 2, color: "#38bdf8", textTransform: "uppercase" }}>
+        <div style={{ display: "flex", fontSize: 28, letterSpacing: 2, color: "#d9a441", textTransform: "uppercase" }}>
           Honey Hole · Wisconsin
         </div>
         <div style={{ display: "flex", fontSize: 78, fontWeight: 700, marginTop: 20, letterSpacing: -2 }}>
           {title}
         </div>
-        <div style={{ display: "flex", fontSize: 32, color: "#93a4b8", marginTop: 16 }}>
+        <div style={{ display: "flex", fontSize: 32, color: "#98a599", marginTop: 16 }}>
           {facts.join("  ·  ")}
         </div>
 
@@ -56,9 +56,9 @@ export default async function Image({ params }: { params: Promise<{ wbic: string
                   fontSize: 26,
                   padding: "10px 22px",
                   borderRadius: 999,
-                  border: "1px solid #223046",
-                  background: "rgba(56,189,248,0.08)",
-                  color: "#e8eef5",
+                  border: "1px solid #2a352c",
+                  background: "rgba(217,164,65,0.10)",
+                  color: "#ecefe8",
                 }}
               >
                 {s.profile.name}
@@ -67,7 +67,7 @@ export default async function Image({ params }: { params: Promise<{ wbic: string
           </div>
         )}
 
-        <div style={{ display: "flex", fontSize: 26, color: "#93a4b8", marginTop: 44 }}>
+        <div style={{ display: "flex", fontSize: 26, color: "#98a599", marginTop: 44 }}>
           Conditions, bite forecast and what to throw
         </div>
       </div>

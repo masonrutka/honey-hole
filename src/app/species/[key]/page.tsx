@@ -43,36 +43,36 @@ export default async function SpeciesPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <nav className="text-xs text-muted">
-        <Link href="/species" className="hover:text-foreground">
+      <nav className="text-[11px] uppercase tracking-[0.16em] text-muted">
+        <Link href="/species" className="hover:text-accent transition-colors">
           Species
         </Link>
       </nav>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{profile.name}</h1>
-      <p className="mt-2 text-muted text-pretty">{profile.blurb}</p>
+      <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">{profile.name}</h1>
+      <p className="mt-3 max-w-2xl text-muted text-pretty">{profile.blurb}</p>
 
       <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 text-sm">
         <div className="rounded-lg border border-edge bg-surface px-3 py-2">
-          <dt className="text-[11px] uppercase tracking-wide text-muted">
+          <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">
             Feeds best at
           </dt>
-          <dd className="mt-0.5 font-medium">
+          <dd className="display mt-1 text-lg">
             {profile.optimalTempF[0]}–{profile.optimalTempF[1]}°F
           </dd>
         </div>
         <div className="rounded-lg border border-edge bg-surface px-3 py-2">
-          <dt className="text-[11px] uppercase tracking-wide text-muted">Spawns at</dt>
-          <dd className="mt-0.5 font-medium">
+          <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">Spawns at</dt>
+          <dd className="display mt-1 text-lg">
             {profile.spawnTempF[0]}–{profile.spawnTempF[1]}°F
           </dd>
         </div>
         <div className="rounded-lg border border-edge bg-surface px-3 py-2">
-          <dt className="text-[11px] uppercase tracking-wide text-muted">Light</dt>
-          <dd className="mt-0.5 font-medium capitalize">{profile.light}</dd>
+          <dt className="text-[11px] uppercase tracking-[0.14em] text-muted">Light</dt>
+          <dd className="display mt-1 text-lg capitalize">{profile.light}</dd>
         </div>
       </dl>
 
-      <h2 className="mt-8 text-sm font-semibold">
+      <h2 className="rule-tick mt-10 pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
         {totalCount > 0
           ? `${totalCount.toLocaleString()} lakes hold ${profile.name.toLowerCase()}`
           : "No lakes recorded yet"}

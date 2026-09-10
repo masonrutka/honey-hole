@@ -24,7 +24,7 @@ export default function StockingHistory({
 
   return (
     <section className="mt-8">
-      <h2 className="text-sm font-semibold">Stocking history</h2>
+      <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">Stocking history</h2>
       <p className="mt-1 text-xs text-muted">
         DNR hatchery records for {lakeName}, {span}. Tribal and private stocking
         is not included.
@@ -37,7 +37,7 @@ export default function StockingHistory({
             className="rounded-lg border border-edge bg-surface p-4"
           >
             <div className="flex items-baseline gap-3">
-              <h3 className="font-medium">{g.species}</h3>
+              <h3 className="display text-lg">{g.species}</h3>
               <span className="ml-auto text-xs text-muted whitespace-nowrap">
                 {g.totalFish.toLocaleString()} fish
               </span>

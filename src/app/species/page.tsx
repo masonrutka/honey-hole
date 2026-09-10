@@ -16,9 +16,13 @@ export default function SpeciesIndex() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="text-3xl font-semibold tracking-tight">Species</h1>
-      <p className="mt-2 text-muted">
-        Wisconsin gamefish, and the lakes the DNR has recorded them in.
+      <p className="text-[11px] uppercase tracking-[0.2em] text-accent">
+        Wisconsin gamefish
+      </p>
+      <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">Species</h1>
+      <p className="mt-3 max-w-xl text-muted text-pretty">
+        Every species the DNR has recorded in a Wisconsin lake, and the water
+        that holds them.
       </p>
 
       {listed.length === 0 ? (
@@ -26,16 +30,23 @@ export default function SpeciesIndex() {
           Species data is still being imported.
         </p>
       ) : (
-        <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+        <>
+          <h2 className="rule-tick mt-10 pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">
+            Browse by species
+          </h2>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2 items-stretch">
           {listed.map((s) => (
-            <li key={s.key}>
+            <li key={s.key} className="h-full">
+              {/* h-full on the anchor: the <li> stretches to the row, but a
+                  block anchor is content-height, so a short blurb left a short
+                  card sitting in a tall row. */}
               <Link
                 href={`/species/${s.key}`}
-                className="block rounded-lg border border-edge bg-surface p-4
+                className="flex h-full flex-col rounded-lg border border-edge bg-surface p-4
                            hover:border-accent/60 hover:bg-surface-2 transition-colors"
               >
                 <div className="flex items-baseline gap-2">
-                  <span className="font-medium">{s.name}</span>
+                  <span className="display text-lg">{s.name}</span>
                   <span className="ml-auto text-xs text-muted">
                     {(counts[s.key] ?? 0).toLocaleString()} lakes
                   </span>
@@ -44,7 +55,8 @@ export default function SpeciesIndex() {
               </Link>
             </li>
           ))}
-        </ul>
+          </ul>
+        </>
       )}
     </div>
   );

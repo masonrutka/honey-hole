@@ -11,7 +11,12 @@ export default function AboutPage() {
   const have = coverage();
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 space-y-6">
-      <h1 className="text-3xl font-semibold tracking-tight">About Honey Hole</h1>
+      <p className="text-[11px] uppercase tracking-[0.2em] text-accent">
+        How this works
+      </p>
+      <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">
+        About Honey Hole
+      </h1>
 
       <p className="text-muted text-pretty">
         Honey Hole pulls together public Wisconsin data that is genuinely useful on the
@@ -19,9 +24,9 @@ export default function AboutPage() {
         what you are allowed to keep, and whether today is worth the trip.
       </p>
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">Where the data comes from</h2>
-        <ul className="space-y-2 text-sm text-muted">
+      <section className="space-y-2 pt-4">
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">Where the data comes from</h2>
+        <ul className="mt-3 space-y-3.5 text-sm text-muted">
           <li>
             <span className="text-foreground">Lakes.</span> {count.toLocaleString()}{" "}
             named lakes and flowages of 5 acres or more, from the WDNR 24K Hydrography
@@ -61,8 +66,8 @@ export default function AboutPage() {
         </ul>
       </section>
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">How the bite forecast works</h2>
+      <section className="space-y-2 pt-4">
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">How the bite forecast works</h2>
         <p className="text-sm text-muted text-pretty">
           Seven factors are scored and summed against a neutral baseline of 50:
           barometric trend over the last six hours, water temperature against that
@@ -78,8 +83,8 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <section className="space-y-2">
-        <h2 className="font-semibold">What this is not</h2>
+      <section className="space-y-2 pt-4">
+        <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">What this is not</h2>
         <p className="text-sm text-muted text-pretty">
           The bite score is a heuristic built from well-established angling
           relationships. It is not a validated predictive model, and nobody has

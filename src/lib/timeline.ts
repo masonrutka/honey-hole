@@ -16,6 +16,8 @@ import type { SpeciesKey } from "./species";
 export interface HourScore {
   time: Date;
   score: number;
+  /** Already gone by. Still drawn, so every day shares one time axis. */
+  elapsed: boolean;
 }
 
 export interface Window {
@@ -98,9 +100,10 @@ export function buildOutlook(
     const hours: HourScore[] = [];
     for (let h = START_HOUR; h <= END_HOUR; h++) {
       const at = new Date(dayStartUtc + h * 3_600_000);
-      // Today should not advertise a window that has already ended, nor let an
-      // elapsed peak win "best day this week".
-      if (now && at.getTime() + 3_600_000 <= now.getTime()) continue;
+      // Elapsed hours are kept and flagged rather than dropped: every row has
+      // to span the same hours for a shared time axis to mean anything. They
+      // are excluded from the peak and the window below.
+      const elapsed = !!now && at.getTime() + 3_600_000 <= now.getTime();
       // Skip hours the weather series does not cover.
       if (
         at.getTime() < new Date(weather.hours[0].time).getTime() ||
@@ -116,16 +119,20 @@ export function buildOutlook(
         waterTempF,
         lake,
       });
-      hours.push({ time: at, score });
+      hours.push({ time: at, score, elapsed });
     }
     if (hours.length === 0) continue;
 
-    const peakScore = Math.max(...hours.map((h) => h.score));
-    const best = bestWindow(hours, peakScore);
+    // Only hours still ahead can be recommended, but if the whole day is gone
+    // fall back to the full day so the row still reports something.
+    const ahead = hours.filter((h) => !h.elapsed);
+    const scoreable = ahead.length > 0 ? ahead : hours;
+
+    const peakScore = Math.max(...scoreable.map((h) => h.score));
+    const best = bestWindow(scoreable, peakScore);
     const covered = best
-      ? hours.filter(
-          (h) => h.time >= best.start && h.time < best.end,
-        ).length / hours.length
+      ? scoreable.filter((h) => h.time >= best.start && h.time < best.end).length /
+        scoreable.length
       : 0;
 
     out.push({

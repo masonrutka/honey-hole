@@ -33,22 +33,40 @@ export default function BiteScore({
             stroke="var(--border)" strokeWidth="8"
           />
           <circle
+            /*
+              Keyed on the species and score so React replaces the node rather
+              than updating it. A CSS animation only runs on mount, so without
+              this the ring drew itself once and then sat still every time you
+              switched species.
+            */
+            key={`${speciesName}-${forecast.score}`}
+            className="dial-draw"
             cx="50" cy="50" r="42" fill="none"
             stroke={color} strokeWidth="8" strokeLinecap="round"
             strokeDasharray={`${filled} ${circumference}`}
+            // The keyframe animates from this offset to zero, so the arc
+            // sweeps out to its final length rather than appearing whole.
+            style={{ ["--dial-len" as string]: filled }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-semibold tabular-nums">{forecast.score}</span>
-          <span className="text-xs font-medium" style={{ color }}>
+          <span className="display text-[2.6rem] leading-none font-semibold tabular-nums">
+            {forecast.score}
+          </span>
+          <span
+            className="mt-1 text-[10px] uppercase tracking-[0.2em]"
+            style={{ color }}
+          >
             {forecast.rating}
           </span>
         </div>
       </div>
 
       <div className="min-w-0">
-        <p className="text-sm text-muted">Bite forecast · {speciesName}</p>
-        <p className="mt-1 text-base text-pretty first-letter:uppercase">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-muted">
+          Bite forecast · {speciesName}
+        </p>
+        <p className="display mt-2 text-xl leading-snug text-pretty first-letter:uppercase">
           {forecast.summary}
         </p>
       </div>

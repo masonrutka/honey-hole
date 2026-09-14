@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import BackLink from "@/components/BackLink";
 import type { Metadata } from "next";
 import { lakesWithSpecies, speciesCounts } from "@/lib/lakes";
 import { SPECIES, type SpeciesKey } from "@/lib/species";
@@ -44,9 +44,7 @@ export default async function SpeciesPage({ params }: Props) {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <nav className="text-[11px] uppercase tracking-[0.16em] text-muted">
-        <Link href="/species" className="hover:text-accent transition-colors">
-          Species
-        </Link>
+        <BackLink href="/species" />
       </nav>
       <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">{profile.name}</h1>
       <p className="mt-3 max-w-2xl text-muted text-pretty">{profile.blurb}</p>

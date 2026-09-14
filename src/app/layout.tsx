@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
+import { NavTracker } from "@/components/BackLink";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
+        <NavTracker />
         <header className="border-b border-edge bg-background/85 backdrop-blur sticky top-0 z-20">
           <div className="mx-auto w-full max-w-5xl px-4 h-16 flex items-center gap-3">
             <Link href="/" className="flex items-baseline gap-2.5 group">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import BackLink from "@/components/BackLink";
 import { totalLakes, coverage } from "@/lib/lakes";
 
 export const metadata: Metadata = {
@@ -11,6 +12,9 @@ export default function AboutPage() {
   const have = coverage();
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 space-y-6">
+      <nav className="text-[11px] uppercase tracking-[0.16em] text-muted">
+        <BackLink href="/" />
+      </nav>
       <p className="text-[11px] uppercase tracking-[0.2em] text-accent">
         How this works
       </p>

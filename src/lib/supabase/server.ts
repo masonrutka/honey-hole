@@ -48,10 +48,13 @@ export async function supabaseServer(): Promise<SupabaseClient | null> {
 /**
  * Read-only, session-free client for public data.
  *
- * Touching cookies() would opt a route out of static generation, and the lake
- * pages depend on being prerendered and revalidated hourly. This client reads
- * only what Row Level Security exposes to anonymous visitors, so it can be
- * used inside cached Server Components without making them dynamic.
+ * Reads only what Row Level Security exposes to anonymous visitors, and never
+ * touches cookies, so it can be called from a Server Component on a route that
+ * is statically generated without forcing that route to render per request.
+ *
+ * Worth knowing: the lake page, its only caller today, is already dynamic
+ * because it awaits searchParams. This client is what keeps that from being a
+ * requirement -- any prerendered page can use it.
  */
 export function supabaseAnon(): SupabaseClient | null {
   if (!isConfigured()) return null;

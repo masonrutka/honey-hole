@@ -17,10 +17,14 @@ export interface SessionState {
  *
  * Reading the session on the server would mean reading cookies, and a cookie
  * read anywhere in a route's tree opts that route out of static generation.
- * The lake pages are prerendered and revalidated hourly, and giving that up to
- * put a name in the header would be a bad trade. Nothing secret is decided
- * here: this drives which buttons appear, while every actual write is checked
- * again on the server and once more by Row Level Security.
+ * This drives the account control in the root layout, so it is in *every*
+ * route's tree -- including the home, species and about pages, which are
+ * genuinely prerendered. Giving all of that up to put a name in the header
+ * would be a bad trade.
+ *
+ * Nothing secret is decided here: this chooses which buttons appear, while
+ * every actual write is checked again in a Server Action and once more by Row
+ * Level Security.
  *
  * `user` is deliberately three-valued. A signed-in visitor whose header flashes
  * "Sign in" for a moment on every page load looks broken, so callers render

@@ -23,10 +23,16 @@ const NONE: LatestConditions = {
 /**
  * What the water was last reported to be doing, for the conditions panel.
  *
- * Deliberately anonymous and session-free. This runs inside a Server Component
- * on a page that is prerendered and revalidated hourly, and reading cookies
- * here would opt the whole lake page out of static generation. Hourly is ample
- * freshness for a lake temperature.
+ * Deliberately anonymous and session-free, for two reasons -- only one of
+ * which is the one you would guess.
+ *
+ * The lake page is NOT statically generated: it awaits searchParams for the
+ * species selector, which forces per-request rendering, so `revalidate = 3600`
+ * on that route does nothing and a cookie read there would cost nothing
+ * either. The real reasons are that this datum is the same for every visitor,
+ * so attaching a session to it would only add work, and that keeping it
+ * session-free means a signed-out visitor sees the same water temperature as
+ * everyone else.
  *
  * Returns the empty result rather than throwing on any failure. A database
  * outage should cost the lake page one optional line, not the whole page --

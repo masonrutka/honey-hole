@@ -63,20 +63,29 @@ export async function submitWaterReport(formData: FormData): Promise<ActionResul
     return { ok: false, error: "Add at least one observation." };
   }
 
-  // The form posts a local datetime with no zone. Interpreting it as UTC would
-  // shift a Wisconsin reading by five or six hours, which is enough to make a
-  // fresh report look stale. Trust the browser's own instant instead, and only
-  // fall back to now.
+  // The browser sends an absolute instant rather than a wall-clock string: the
+  // server has no idea what timezone the angler is standing in, and reading a
+  // local time as UTC would age a fresh Wisconsin report by five or six hours.
   const observedMs = Number(formData.get("observed_ms"));
-  const observedAt = Number.isFinite(observedMs) && observedMs > 0
-    ? new Date(observedMs)
-    : new Date();
+  const observedAt = new Date(
+    Number.isFinite(observedMs) && observedMs > 0 ? observedMs : Date.now(),
+  );
+
+  // Validate the resulting instant, not the number that produced it. A value
+  // like 1e20 is finite and positive but outside the Date range, so getTime()
+  // is NaN -- and every comparison against NaN is false, so the range checks
+  // below would both pass and toISOString() would throw. A Server Action is a
+  // public endpoint, so that is reachable by anyone who posts to it.
+  const observedTime = observedAt.getTime();
+  if (!Number.isFinite(observedTime)) {
+    return { ok: false, error: "That time could not be read." };
+  }
 
   const now = Date.now();
-  if (observedAt.getTime() > now + 60 * 60 * 1000) {
+  if (observedTime > now + 60 * 60 * 1000) {
     return { ok: false, error: "That time is in the future." };
   }
-  if (observedAt.getTime() < now - 14 * 24 * 60 * 60 * 1000) {
+  if (observedTime < now - 14 * 24 * 60 * 60 * 1000) {
     return { ok: false, error: "Reports older than two weeks are not accepted." };
   }
 
@@ -92,16 +101,23 @@ export async function submitWaterReport(formData: FormData): Promise<ActionResul
   });
 
   if (error) {
-    // The daily cap lives in the insert policy, so hitting it surfaces as a
-    // policy violation rather than a friendly message.
-    if (error.code === "42501") {
+    // Custom SQLSTATEs raised by the enforce_report_rules trigger, so the
+    // limits can live in the database and still produce a decent message.
+    if (error.code === "HH001") {
       return { ok: false, error: "That is a lot of reports for one day. Try again tomorrow." };
+    }
+    if (error.code === "HH002") {
+      return { ok: false, error: "That observation time is outside the last two weeks." };
+    }
+    if (error.code === "42501") {
+      return { ok: false, error: "Sign in to post a report." };
     }
     return { ok: false, error: "That report could not be saved. Try again." };
   }
 
-  // The conditions panel caches for an hour; a new reading should show up on
-  // the lake page now, not eventually.
+  // The lake route renders per request today, so this is belt and braces: it
+  // costs nothing and keeps the new reading showing up immediately if the page
+  // ever stops awaiting searchParams and becomes prerendered.
   revalidatePath(`/lake/${wbic}`);
   return { ok: true };
 }

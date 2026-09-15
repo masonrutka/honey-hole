@@ -126,13 +126,40 @@ themselves — it is off, and the comment there explains what turning it on
 would cost.
 
 **Moderation.** `water_reports.hidden_at` hides a row from everyone but its
-author without destroying it. Set it from the Supabase table editor. There is
-no admin UI yet; with this many users the table editor is enough.
+author without destroying it. Set it from the Supabase table editor, which runs
+as the service role. There is no admin UI yet; with this many users the table
+editor is enough.
+
+Note that `UPDATE` on `water_reports` is revoked from ordinary users
+altogether: the app only ever posts a report or removes one, so there is no
+reason to leave editing open. The service role bypasses that, which is why
+moderating from the dashboard still works.
+
+The freshness window on `observed_at` is enforced in a trigger rather than as a
+`CHECK` constraint. A `CHECK` is re-evaluated on every `UPDATE` and by the
+`COPY` that `pg_restore` uses, so `observed_at` within 14 days as a constraint
+would have made old reports impossible to hide -- exactly the ones most likely
+to need it -- and, after a fortnight of history, made backups impossible to
+restore.
 
 **Deleting someone's data.** Deleting a user in **Authentication → Users**
 cascades to their profile and every report they wrote. Worth knowing before
 somebody asks, because at that point they are entitled to a quick answer.
 
-**Rate limiting.** Ten reports per person per day, enforced in the insert
-policy rather than in the app, so it holds even if someone calls the API
-directly.
+**Rate limiting.** Ten reports per person per day, and a cap on feedback.
+Both are enforced by `BEFORE INSERT` triggers that increment a counter row in
+`write_quota`, so they hold even if somebody calls the REST API directly.
+
+An earlier version counted recent rows inside the insert policy instead. That
+does not work, and it is worth knowing why, because the pattern is everywhere
+online: Row Level Security filters rows but does not restrict columns, so a
+caller could supply their own `created_at` and hide their rows from the
+counter; a multi-row insert evaluates every row against the snapshot from
+before the statement started, so one request could insert any number of rows
+and each would see the old count; and concurrent inserts all read the count
+before any of them commits. Updating a counter row takes a lock, which is what
+actually makes writers queue up.
+
+Anonymous feedback shares a single daily bucket, because there is no identity
+to meter. It is blunt, and it is the difference between a flood costing you a
+dashboard clean-up and a flood costing you your Resend quota.

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { NavTracker } from "@/components/BackLink";
+import AuthMenu from "@/components/AuthMenu";
+import { isConfigured } from "@/lib/supabase/env";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -92,6 +94,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/about" className="text-muted hover:text-foreground transition-colors">
                 About
               </Link>
+              <AuthMenu />
             </nav>
           </div>
         </header>
@@ -125,6 +128,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Always confirm current regulations with the DNR before you fish. Bite
               and bait ratings are informed suggestions, not guarantees.
             </p>
+            {/* Only advertise this once there is somewhere for it to go. */}
+            {isConfigured() && (
+              <p>
+                Something wrong, missing or wanted?{" "}
+                <Link className="text-accent hover:underline" href="/feedback">
+                  Send feedback
+                </Link>
+                .
+              </p>
+            )}
           </div>
         </footer>
       </body>

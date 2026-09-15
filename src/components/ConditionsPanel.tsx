@@ -137,6 +137,15 @@ export default async function ConditionsPanel({
                 key={s.key}
                 href={`/lake/${lake.wbic}?species=${s.key}`}
                 scroll={false}
+                /*
+                 * Replace rather than push. These chips are a tab strip, not
+                 * navigation: pushing meant every species you tried became its
+                 * own history entry, so Back walked you through them one at a
+                 * time instead of returning to wherever you came from. The URL
+                 * still carries the species, so a link to one specific species
+                 * on one lake is still shareable.
+                 */
+                replace
                 className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                   s.key === selected
                     ? "border-accent bg-accent/15 text-accent"

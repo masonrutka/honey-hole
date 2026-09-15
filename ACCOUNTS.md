@@ -97,6 +97,27 @@ not pick them up.
 
 ---
 
+## Verifying the security rules
+
+The policies, the rate limits and the signup trigger are the only part of this
+app that `tsc`, `eslint` and `vitest` cannot see at all. They run inside
+Postgres. So they have their own suite, which tries to break them:
+
+```bash
+brew install postgresql@16   # once
+./supabase/test/run.sh
+```
+
+It stands up a throwaway database, loads `schema.sql` into it twice (proving
+the file is re-runnable, which it claims to be), then attacks it as `anon` and
+as `authenticated`: posting a report as somebody else, backdating `created_at`
+to slip the rate limit, inserting 5,000 rows in one statement, reading other
+people's feedback, resetting your own quota, deleting somebody else's report,
+enumerating the member list. 23 checks, and it exits non-zero if any fails.
+
+**Run it after every change to `schema.sql`**, before pasting the file into
+Supabase.
+
 ## Checking it works
 
 ```bash

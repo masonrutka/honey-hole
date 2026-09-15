@@ -32,10 +32,8 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
-drop policy if exists "profiles are public" on public.profiles;
-create policy "profiles are public"
-  on public.profiles for select
-  using (true);
+-- The SELECT policy for profiles is defined after water_reports, which it
+-- references. See "Who is visible" below.
 
 drop policy if exists "users insert their own profile" on public.profiles;
 create policy "users insert their own profile"
@@ -214,6 +212,31 @@ create policy "users delete their own reports"
   on public.water_reports for delete
   using (auth.uid() = user_id);
 
+-- ---------------------------------------------------------------------------
+-- Who is visible
+-- ---------------------------------------------------------------------------
+-- Defined here rather than beside the profiles table because it references
+-- water_reports, and on a brand new database that table does not exist yet.
+drop policy if exists "profiles are public" on public.profiles;
+drop policy if exists "contributors are public" on public.profiles;
+-- Only people who have actually posted something visible are readable, plus
+-- yourself. `using (true)` would have let anyone page through the whole table
+-- with the key that ships in the browser and collect every member's real name
+-- from display_name. The report feed still works, because a report's author by
+-- definition has a visible report.
+--
+-- No recursion risk: this reads water_reports, whose own SELECT policy reads
+-- only its own columns and auth.uid(), and never reads profiles.
+create policy "contributors are public"
+  on public.profiles for select
+  using (
+    auth.uid() = id
+    or exists (
+      select 1 from public.water_reports r
+      where r.user_id = profiles.id and r.hidden_at is null
+    )
+  );
+
 -- The app offers no way to edit a report -- only to post one or remove it --
 -- so UPDATE is withdrawn entirely rather than left as surface to defend.
 -- Moderation runs as the service role in the dashboard, which bypasses this.
@@ -286,6 +309,12 @@ create policy "anyone may send feedback"
 revoke update, delete on public.feedback from anon, authenticated;
 revoke insert on public.feedback from anon, authenticated;
 grant insert (user_id, email, message, path) on public.feedback to anon, authenticated;
+
+-- There is no SELECT policy, so RLS already returns nothing to everyone. The
+-- grant goes too, because this table holds email addresses and the grant is
+-- what would quietly expose them the day somebody adds a "users can read their
+-- own feedback" policy without thinking about the columns.
+revoke select on public.feedback from anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Aggregates

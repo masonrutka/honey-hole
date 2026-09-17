@@ -118,6 +118,7 @@ let recentCache: SavedLake[] | null = null;
 function invalidate(): void {
   favCache = null;
   recentCache = null;
+  feedCache = null;
   for (const fn of listeners) fn();
 }
 
@@ -125,7 +126,8 @@ export function subscribe(onChange: () => void): () => void {
   listeners.add(onChange);
   // Another tab changing storage should update this one too.
   const onStorage = (e: StorageEvent) => {
-    if (e.key === FAVORITES_KEY || e.key === RECENT_KEY || e.key === null) invalidate();
+    if (e.key === FAVORITES_KEY || e.key === RECENT_KEY || e.key === METER_KEY || e.key === null)
+      invalidate();
   };
   if (typeof window !== "undefined") window.addEventListener("storage", onStorage);
   return () => {
@@ -146,3 +148,61 @@ export function recentSnapshot(): SavedLake[] {
 
 /** The server has no storage, so it always renders the empty state. */
 export const emptySnapshot = (): SavedLake[] => EMPTY;
+
+/* --------------------------------------------------------------------------
+ * The free-view meter.
+ *
+ * Counts the distinct lakes whose report feed a signed-out visitor has opened,
+ * so they can be asked to sign in after a few. Per-browser and trivially
+ * cleared, which is fine: this is a nudge, not a security boundary. Anything
+ * that genuinely must not be read without an account is refused by Row Level
+ * Security in the database, not by this counter.
+ * -------------------------------------------------------------------------- */
+
+const METER_KEY = "honeyhole:feeds";
+const METER_CAP = 50;
+
+/** WBICs whose feeds have been opened, oldest first. */
+export function feedsViewed(s: Store | null = store()): number[] {
+  if (!s) return [];
+  try {
+    const parsed = JSON.parse(s.getItem(METER_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((n): n is number => typeof n === "number") : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Record that this lake's feed was opened, and return how many distinct lakes
+ * have now been opened. Re-opening the same lake never advances the meter --
+ * being asked to sign in for a lake you already read would feel like a bug.
+ */
+export function recordFeedView(wbic: number, s: Store | null = store()): number {
+  const seen = feedsViewed(s);
+  if (seen.includes(wbic)) return seen.length;
+  const next = [...seen, wbic].slice(-METER_CAP);
+  if (s) {
+    try {
+      s.setItem(METER_KEY, JSON.stringify(next));
+    } catch {
+      // Storage full or blocked. Undercounting only ever favours the visitor.
+    }
+  }
+  invalidate();
+  return next.length;
+}
+
+const NO_FEEDS: number[] = [];
+let feedCache: number[] | null = null;
+
+/** Stable snapshot of the meter for useSyncExternalStore. */
+export function feedsSnapshot(): number[] {
+  if (feedCache === null) feedCache = feedsViewed();
+  return feedCache;
+}
+
+/** The server has no storage, so it has seen nothing. */
+export const noFeeds = (): number[] => NO_FEEDS;
+
+export const METER = { METER_KEY, METER_CAP };

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BackLink from "@/components/BackLink";
 import type { Metadata } from "next";
 import { speciesCounts } from "@/lib/lakes";
 import { ALL_SPECIES } from "@/lib/species";
@@ -16,7 +17,10 @@ export default function SpeciesIndex() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
-      <p className="text-[11px] uppercase tracking-[0.2em] text-accent">
+      <nav className="text-[11px] uppercase tracking-[0.16em] text-muted">
+        <BackLink href="/" />
+      </nav>
+      <p className="mt-4 text-[11px] uppercase tracking-[0.2em] text-accent">
         Wisconsin gamefish
       </p>
       <h1 className="display mt-3 text-4xl sm:text-5xl font-semibold">Species</h1>

@@ -7,6 +7,8 @@ import { getLake, getRegulations, lakeSpeciesProfiles } from "@/lib/lakes";
 import { SPECIES, type SpeciesKey } from "@/lib/species";
 import ConditionsPanel, { ConditionsSkeleton } from "@/components/ConditionsPanel";
 import LakeMemory from "@/components/LakeMemory";
+import BackLink from "@/components/BackLink";
+import WaterReports from "@/components/WaterReports";
 import LakeMap, { LakeMapSkeleton } from "@/components/LakeMap";
 import StockingHistory from "@/components/StockingHistory";
 
@@ -53,11 +55,8 @@ export default async function LakePage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       <div className="contours contours-tight -mx-4 px-4 pb-2">
-      <nav className="text-[11px] uppercase tracking-[0.16em] text-muted">
-        <Link href="/" className="hover:text-accent transition-colors">
-          Lakes
-        </Link>
-        <span className="mx-2 text-edge">/</span>
+      <nav className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.16em] text-muted">
+        <BackLink href="/" />
         <span>{lake.county ? `${lake.county} County` : "Wisconsin"}</span>
       </nav>
 
@@ -95,6 +94,8 @@ export default async function LakePage({ params, searchParams }: Props) {
       <Suspense fallback={<LakeMapSkeleton />}>
         <LakeMap lake={lake} />
       </Suspense>
+
+      <WaterReports wbic={lake.wbic} lakeName={lake.name} />
 
       <section className="mt-10">
         <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">

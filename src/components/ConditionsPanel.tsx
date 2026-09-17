@@ -7,6 +7,8 @@ import { SPECIES, type SpeciesKey } from "@/lib/species";
 import type { Lake } from "@/lib/lakes";
 import { lakeSpeciesProfiles } from "@/lib/lakes";
 import { buildOutlook } from "@/lib/timeline";
+import { latestConditions } from "@/lib/reports";
+import { reconcileWaterTemp, tempLabel } from "@/lib/watertemp";
 import BiteScore from "./BiteScore";
 import FactorList from "./FactorList";
 import OutlookStrip from "./OutlookStrip";
@@ -61,11 +63,17 @@ export default async function ConditionsPanel({
   }
 
   const now = new Date();
-  const waterTempF = estimateWaterTempF(
+  const estimatedTempF = estimateWaterTempF(
     weather.dailyMeanAirF,
     { acres: lake.acres, maxDepthFt: lake.maxDepthFt },
     weather.todayIndex,
   );
+  // Somebody standing on this lake with a thermometer beats the model, while
+  // the reading is fresh. Anonymous and cached with the rest of the page --
+  // see lib/reports.ts for why it must not read cookies here.
+  const reported = await latestConditions(lake.wbic);
+  const waterTemp = reconcileWaterTemp(estimatedTempF, reported, now);
+  const waterTempF = waterTemp.tempF;
   const celestial = celestialFor(
     now,
     lake.lat,
@@ -129,6 +137,15 @@ export default async function ConditionsPanel({
                 key={s.key}
                 href={`/lake/${lake.wbic}?species=${s.key}`}
                 scroll={false}
+                /*
+                 * Replace rather than push. These chips are a tab strip, not
+                 * navigation: pushing meant every species you tried became its
+                 * own history entry, so Back walked you through them one at a
+                 * time instead of returning to wherever you came from. The URL
+                 * still carries the species, so a link to one specific species
+                 * on one lake is still shareable.
+                 */
+                replace
                 className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                   s.key === selected
                     ? "border-accent bg-accent/15 text-accent"
@@ -158,7 +175,7 @@ export default async function ConditionsPanel({
         <h2 className="rule-tick pt-3 text-[11px] uppercase tracking-[0.18em] text-muted">Right now</h2>
         <dl className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 text-sm">
           <Stat label="Air" value={`${Math.round(current.tempF)}°F`} />
-          <Stat label="Water (est.)" value={`${Math.round(waterTempF)}°F`} />
+          <Stat label={tempLabel(waterTemp.source)} value={`${Math.round(waterTempF)}°F`} />
           <Stat
             label="Wind"
             value={`${Math.round(current.windMph)} mph ${compass(current.windDirDeg)}`}
